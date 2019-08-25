@@ -25,3 +25,15 @@ class OffsetOverlay(Grid):
     def __checkBounds(self, x: int, y: int):
         if (x < 0) or (y < 0) or (x >= self.width) or (y >= self.height):
             raise Exception("Out of bounds")
+
+    # for debug purposes only
+    def printOverlay(self):
+        for y in range(self.height - 1, -1, -1):
+            row = ["."] * 5
+            for x in range(0, self.width):
+                if self.__grid.get(x, y):
+                    row[x] = "X"
+            line = row[0]
+            for x in range(1, self.width):
+                line = line + " " + row[x]
+            print(line)

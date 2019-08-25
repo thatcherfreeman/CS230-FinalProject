@@ -11,9 +11,6 @@ class CustomTetrisPiece:
             raise Exception("Only 5x5 piece overlays are supported right now")
         self.overlay: OffsetOverlay = OffsetOverlay(grid, -2, -2)
 
-    def getOverlay(self):
-       return self.overlay
-
     def rotateCW(self):
         for i in range(0, 3):
             for j in range(1, 3):
@@ -37,15 +34,3 @@ class CustomTetrisPiece:
                 self.overlay.set(-1 * i, -1 * j, topLeft)
                 self.overlay.set(j, -1 * i, bottomLeft)
                 self.overlay.set(i, j, bottomRight)
-
-    # for debug purposes only
-    def printOverlay(self):
-        for y in range(4, -1, -1):
-            row = ["."] * 5
-            for x in range(0, 5):
-                if self.overlay.get(x - 2, y - 2):
-                    row[x] = "X"
-            line = row[0]
-            for x in range(1,5):
-                line = line + " " + row[x]
-            print(line)
