@@ -1,7 +1,6 @@
 import unittest
-from src.grid.ListGrid import ListGrid
-from src.grid.OffsetOverlay import OffsetOverlay
-from src.CustomTetrisPiece import CustomTetrisPiece
+from grid.ListGrid import ListGrid
+from piece.CustomTetrisPiece import CustomTetrisPiece
 
 
 def initTPiece():

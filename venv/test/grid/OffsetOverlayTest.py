@@ -1,6 +1,6 @@
 import unittest
-from src.grid.ListGrid import ListGrid
-from src.grid.OffsetOverlay import OffsetOverlay
+from grid.ListGrid import ListGrid
+from grid.OffsetOverlay import OffsetOverlay
 
 
 def initGrid():

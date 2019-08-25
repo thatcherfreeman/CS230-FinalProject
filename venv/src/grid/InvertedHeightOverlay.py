@@ -1,4 +1,4 @@
-from src.grid.Grid import Grid
+from grid.Grid import Grid
 
 
 class InvertedHeightOverlay(Grid):

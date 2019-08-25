@@ -1,6 +1,6 @@
 from grid.ListGrid import ListGrid
-from src.grid.Grid import Grid
-from src.grid.InvertedHeightOverlay import InvertedHeightOverlay
+from grid.Grid import Grid
+from grid.InvertedHeightOverlay import InvertedHeightOverlay
 
 
 # The state of the game, minimal for rigorous Policy performance
