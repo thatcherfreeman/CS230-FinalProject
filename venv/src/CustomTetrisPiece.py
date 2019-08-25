@@ -1,13 +1,14 @@
 from src.grid.Grid import Grid
-from src.grid.ListGrid import ListGrid
 from src.grid.OffsetOverlay import OffsetOverlay
 
 # TODO: Use flyweight pattern for grid rotation to save processing time?
 # A class representing the orientation and content of a tetris piece. It has a 5x5 grid as its underlying storage.
-class TetrisPiece:
+
+
+class CustomTetrisPiece:
     def __init__(self, grid: Grid):
         if grid.height != 5 or grid.width != 5:
-            raise "Only 5x5 piece overlays are supported right now"
+            raise Exception("Only 5x5 piece overlays are supported right now")
         self.overlay: OffsetOverlay = OffsetOverlay(grid, -2, -2)
 
     def getOverlay(self):
@@ -40,11 +41,11 @@ class TetrisPiece:
     # for debug purposes only
     def printOverlay(self):
         for y in range(4, -1, -1):
-            list = ["."] * 5
+            row = ["."] * 5
             for x in range(0, 5):
                 if self.overlay.get(x - 2, y - 2):
-                    list[x] = "X"
-            line = list[0]
+                    row[x] = "X"
+            line = row[0]
             for x in range(1,5):
-                line = line + " " + list[x]
+                line = line + " " + row[x]
             print(line)

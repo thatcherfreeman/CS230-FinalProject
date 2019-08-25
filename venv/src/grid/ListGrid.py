@@ -1,9 +1,10 @@
 from src.grid.Grid import Grid
 
-# A really simple implementation of Grid that uses a 2D list
+
 class ListGrid(Grid):
+    """A really simple implementation of Grid that uses a 2D list"""
     def __init__(self, width: int, height: int, initVal):
-        self.__grid = [[initVal for y in range(0, height)] for x in range(0,width)];
+        self.__grid = [[initVal for y in range(0, height)] for x in range(0, width)]
         super().__init__(width, height)
 
     def get(self, x: int, y: int):

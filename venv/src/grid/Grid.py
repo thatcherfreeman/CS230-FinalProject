@@ -9,5 +9,3 @@ class Grid:
 
     def set(self, x: int, y: int, value):
         raise NotImplementedError
-
-    # TODO: Add 'copy' method?
