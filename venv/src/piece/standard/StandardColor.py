@@ -8,4 +8,6 @@ class StandardColor(Enum):
     GREEN = 4,
     RED = 5,
     BLUE = 6,
-    ORANGE = 7
+    ORANGE = 7,
+    # The 'NONE' color indicates a piece is not present on the grid
+    NONE = 8
