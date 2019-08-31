@@ -12,16 +12,15 @@ PIECE_GRID_WIDTH = 5
 PIECE_GRID_HEIGHT = 5
 
 PIECE_CELL_HEIGHT = 1
-PIECE_CELL_WIDTH = 8
+PIECE_CELL_WIDTH = 1
 GRID_LINE_THICKNESS = 0
 
 
-# TODO: some 'getFrame' interface?
 class PieceWidget:
     """A UI element that has a 5x5 grid to display a single tetris piece."""
     def __init__(self, parentWidget):
         self.displayGrid = ColorDisplayGrid(parentWidget, PIECE_GRID_HEIGHT, PIECE_GRID_WIDTH,
-                                            PIECE_GRID_HEIGHT, PIECE_CELL_WIDTH, GRID_LINE_THICKNESS)
+                                            PIECE_CELL_HEIGHT, PIECE_CELL_WIDTH, GRID_LINE_THICKNESS)
         self.initOutsides()
 
     def initOutsides(self):

@@ -2,7 +2,8 @@ import tkinter as tk
 
 from grid.InvertedHeightOverlay import InvertedHeightOverlay
 from grid.ListGrid import ListGrid
-from gui.DisplayConstants import EMPTY_CELL_COLOR
+from gui.DisplayConstants import COLOR_MAP
+from piece.standard.StandardColor import StandardColor
 
 GRID_LINE_COLOR = "black"
 
@@ -35,6 +36,6 @@ class ColorDisplayGrid:
             for y in range(0, self.displayGrid.height):
                 tile = tk.Label(self.__masterFrame, height=cellHeight, width=cellWidth)
                 tile.grid(column=x, row=y, padx=gridLineThickness, pady=gridLineThickness)
-                tile.configure(bg=EMPTY_CELL_COLOR)
+                tile.configure(bg=COLOR_MAP[StandardColor.NONE])
                 self.displayGrid.set(x, y, tile)
         self.displayGrid = InvertedHeightOverlay(self.displayGrid)
