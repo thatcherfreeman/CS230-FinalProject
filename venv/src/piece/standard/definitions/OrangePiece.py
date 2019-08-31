@@ -30,6 +30,6 @@ def initRotations():
     return [twelveOverlay, threeOverlay, sixOverlay, nineOverlay]
 
 
-class PurplePiece:
-    color = StandardColor.PURPLE
+class OrangePiece:
+    color = StandardColor.ORANGE
     rotations = initRotations()
