@@ -1,7 +1,7 @@
 from grid.Grid import Grid
 from grid.InvertedHeightOverlay import InvertedHeightOverlay
 from grid.ListGrid import ListGrid
-from piece.standard.StandardColor import StandardColor
+from game.piece.standard.StandardColor import StandardColor
 from state.GameState import GameState
 
 

@@ -3,7 +3,7 @@ import tkinter as tk
 from grid.InvertedHeightOverlay import InvertedHeightOverlay
 from grid.ListGrid import ListGrid
 from gui.DisplayConstants import COLOR_MAP
-from piece.standard.StandardColor import StandardColor
+from game.piece.standard.StandardColor import StandardColor
 
 GRID_LINE_COLOR = "black"
 

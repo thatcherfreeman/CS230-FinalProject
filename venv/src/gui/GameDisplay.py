@@ -5,9 +5,9 @@ from gui.ColorDisplayGrid import ColorDisplayGrid
 from gui.DisplayConstants import BACKDROP_COLOR, COLOR_MAP, UI_FONT
 from gui.HeldPiecePane import HeldPiecePane
 from gui.InfoPane import InfoPane
-from piece.TetrisPiece import TetrisPiece
-from piece.standard.StandardColor import StandardColor
-from state.GameState import PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT
+from game.piece.TetrisPiece import TetrisPiece
+from game.piece.standard.StandardColor import StandardColor
+from game.GameState import PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT
 
 PLAYFIELD_CELL_WIDTH = 4
 PLAYFIELD_CELL_HEIGHT = 2

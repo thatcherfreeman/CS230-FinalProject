@@ -2,7 +2,7 @@ import tkinter as tk
 
 from gui.DisplayConstants import BACKDROP_COLOR, UI_FONT
 from gui.PieceWidget import PieceWidget
-from piece.TetrisPiece import TetrisPiece
+from game.piece.TetrisPiece import TetrisPiece
 
 HELD_PIECE_TEXT = "Hold (Press Q)"
 HOLD_AVAILABLE_COLOR = "black"

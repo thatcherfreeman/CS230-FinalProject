@@ -1,5 +1,7 @@
-from piece.standard import PieceUtils
-from piece.standard.StandardColor import StandardColor
+from game.piece.standard import PieceUtils
+from game.piece.standard.RotationData import RotationData
+from game.piece.standard.StandardColor import StandardColor
+from game.piece.standard.definitions.CommonKicks import SIX_KICKS, THREE_KICKS, NINE_KICKS, TWELVE_KICKS
 
 
 def initRotations():
@@ -9,6 +11,7 @@ def initRotations():
     twelveOverlay.set(0, 0, True)
     twelveOverlay.set(1, 0, True)
     twelveOverlay.set(0, 1, True)
+    twelveRotData = RotationData(twelveOverlay, TWELVE_KICKS)
 
     # 'T' facing right
     threeOverlay = PieceUtils.initOverlay()
@@ -16,6 +19,7 @@ def initRotations():
     threeOverlay.set(0, 0, True)
     threeOverlay.set(0, 1, True)
     threeOverlay.set(1, 0, True)
+    threeRotData = RotationData(threeOverlay, THREE_KICKS)
 
     # 'T' facing down
     sixOverlay = PieceUtils.initOverlay()
@@ -23,6 +27,7 @@ def initRotations():
     sixOverlay.set(0, 0, True)
     sixOverlay.set(1, 0, True)
     sixOverlay.set(0, -1, True)
+    sixRotData = RotationData(sixOverlay, SIX_KICKS)
 
     # 'T' facing left
     nineOverlay = PieceUtils.initOverlay()
@@ -30,8 +35,9 @@ def initRotations():
     nineOverlay.set(0, 0, True)
     nineOverlay.set(0, 1, True)
     nineOverlay.set(-1, 0, True)
+    nineRotData = RotationData(nineOverlay, NINE_KICKS)
 
-    return [twelveOverlay, threeOverlay, sixOverlay, nineOverlay]
+    return [twelveRotData, threeRotData, sixRotData, nineRotData]
 
 
 class PurplePiece:

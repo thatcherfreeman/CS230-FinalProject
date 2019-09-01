@@ -1,4 +1,4 @@
-from piece.standard.StandardColor import StandardColor
+from game.piece.standard.StandardColor import StandardColor
 
 # TODO: move these constants since they are only for the main display grid?
 

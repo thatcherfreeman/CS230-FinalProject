@@ -2,10 +2,10 @@ import threading
 import time
 import tkinter as tk
 from gui.GameDisplay import GameDisplay
-from piece.standard import StandardPieceFactory
-from piece.standard.StandardColor import StandardColor
-from piece.standard.StandardPiece import StandardPiece
-from state.GameState import PIECE_QUEUE_LEN
+from game.piece.standard import StandardPieceFactory
+from game.piece.standard.StandardColor import StandardColor
+from game.piece.standard.StandardPiece import StandardPiece
+from game.GameState import PIECE_QUEUE_LEN
 
 PIECES = [StandardPieceFactory.getPiece(pieceDefinition) for pieceDefinition in StandardPiece]
 

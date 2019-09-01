@@ -1,5 +1,7 @@
-from piece.standard import PieceUtils
-from piece.standard.StandardColor import StandardColor
+from game.piece.WallKicks import WallKicks
+from game.piece.standard import PieceUtils
+from game.piece.standard.RotationData import RotationData
+from game.piece.standard.StandardColor import StandardColor
 
 
 def initRotations():
@@ -9,8 +11,9 @@ def initRotations():
     twelveOverlay.set(0, -1, True)
     twelveOverlay.set(-1, 0, True)
     twelveOverlay.set(-1, -1, True)
+    twelveRotData = RotationData(twelveOverlay, WallKicks([(0, 0)], [(0, 0)]))
 
-    return [twelveOverlay] * 4
+    return [twelveRotData] * 4
 
 
 class YellowPiece:

@@ -3,8 +3,8 @@ from typing import List
 
 from gui.DisplayConstants import BACKDROP_COLOR, UI_FONT, UI_TEXT_COLOR
 from gui.PieceWidget import PieceWidget
-from piece.TetrisPiece import TetrisPiece
-from state.GameState import PIECE_QUEUE_LEN
+from game.piece.TetrisPiece import TetrisPiece
+from game.GameState import PIECE_QUEUE_LEN
 
 INFO_PANE_WIDTH = 200
 QUEUED_PIECES_TEXT = "Next"

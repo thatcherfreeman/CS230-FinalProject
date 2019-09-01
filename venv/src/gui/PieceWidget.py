@@ -1,10 +1,7 @@
-import tkinter as tk
-
-from grid.ListGrid import ListGrid
 from gui.ColorDisplayGrid import ColorDisplayGrid
 from gui.DisplayConstants import COLOR_MAP
-from piece.TetrisPiece import TetrisPiece
-from piece.standard.StandardColor import StandardColor
+from game.piece.TetrisPiece import TetrisPiece
+from game.piece.standard.StandardColor import StandardColor
 
 PIECE_BACKGROUND_COLOR = "black"
 
