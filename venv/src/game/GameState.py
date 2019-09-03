@@ -1,11 +1,10 @@
 from grid.ListGrid import ListGrid
 from grid.Grid import Grid
 from grid.InvertedHeightOverlay import InvertedHeightOverlay
-from game.PieceGenerator import PieceGenerator
 
 PLAYFIELD_WIDTH = 10
 PLAYFIELD_HEIGHT = 20
-BUFFER_HEIGHT = 2
+BUFFER_HEIGHT = 4
 PIECE_QUEUE_LEN = 3
 
 
@@ -22,6 +21,7 @@ class GameState:
         #  now, let's exclude piece generation info from the game state. Revisit this later.
         self.currentPiece = None
         self.currentPieceLocation = None
-        self.pieceQueue = None # TODO: Use a queue library for this?
+        self.pieceQueue = None
         self.heldPiece = None
+        self.holdAvailable = True
         self.points = 0
