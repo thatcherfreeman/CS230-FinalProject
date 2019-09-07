@@ -25,3 +25,6 @@ class FlyweightRotationTetrisPiece(TetrisPiece):
         self.__rotIdx = (self.__rotIdx - 1) % 4
         self.overlay = self.__rotations[self.__rotIdx].overlay
         self.wallKicks = self.__rotations[self.__rotIdx].wallKicks
+
+    def getRotIdx(self):
+        return self.__rotIdx

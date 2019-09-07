@@ -9,6 +9,7 @@ ACTIONS = [action for action in Action]
 
 
 class RandomAgent(Agent):
+    """This is an Agent that chooses actions at random. A potentially useful benchmark."""
     def __init__(self, seed: str = None):
         super().__init__()
         self.generator = Random()

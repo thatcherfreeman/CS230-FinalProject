@@ -29,7 +29,7 @@ class GameDriver:
 
     def initGameState(self):
         self.setCurrentPiece(self.pieceGenerator.generatePiece())
-        self.setCurrentPieceLocation((int(trunc(PLAYFIELD_WIDTH/2)), PLAYFIELD_HEIGHT))
+        self.setCurrentPieceLocation((PIECE_SPAWN_X, PIECE_SPAWN_Y))
         self.state.pieceQueue = deque()
         for i in range(0, PIECE_QUEUE_LEN):
             self.state.pieceQueue.append(self.pieceGenerator.generatePiece())
