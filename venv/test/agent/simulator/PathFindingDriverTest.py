@@ -1,6 +1,6 @@
 import unittest
 
-from agent.simulator.ReversibleDriver import ReversibleDriver
+from agent.simulator.PathFindingDriver import PathFindingDriver
 from game.Direction import Direction
 from game.GameDriver import PIECE_SPAWN_X, PIECE_SPAWN_Y
 from game.piece.standard import StandardPieceFactory
@@ -8,7 +8,7 @@ from game.piece.standard.StandardPiece import StandardPiece
 
 
 def initDriverWithSparseBoard():
-    driver = ReversibleDriver()
+    driver = PathFindingDriver()
     piece = StandardPieceFactory.getPiece(StandardPiece.I)
     piece.rotateCW()
     driver.setCurrentPiece(piece)
@@ -17,7 +17,7 @@ def initDriverWithSparseBoard():
 
 
 def initDriverWithPossibleCollision():
-    driver = ReversibleDriver()
+    driver = PathFindingDriver()
     piece = StandardPieceFactory.getPiece(StandardPiece.I)
     piece.rotateCW()
     driver.setCurrentPiece(piece)
@@ -25,7 +25,7 @@ def initDriverWithPossibleCollision():
     return driver
 
 
-class ReversibleDriverTest(unittest.TestCase):
+class PathFindingDriverTest(unittest.TestCase):
 
     def testRevertMoveDown(self):
         driver = initDriverWithSparseBoard()

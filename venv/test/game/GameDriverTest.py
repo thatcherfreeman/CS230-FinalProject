@@ -49,7 +49,7 @@ def initGameOverTest():
     return driver
 
 
-class MyTestCase(unittest.TestCase):
+class GameDriverTest(unittest.TestCase):
     def testFullClear(self):
         driver = initClearTest()
         points = driver.checkAndClearLines()[0]

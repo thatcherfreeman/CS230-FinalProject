@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from agent.Action import Action
 from agent.Agent import Agent
@@ -10,8 +10,6 @@ class SimulatorAgent(Agent):
     def __init__(self):
         super().__init__()
 
-    # TODO: make class 'SimulatorDriver/ReversibleDriver' which allows reversibility of action invocations (maybe by returning a lambda for each action that would reverse that action)
-
-    def getPlacements(self, state: GameState) -> Dict[PiecePlacement, List[Action]]:
-        # TODO: start with a game state, DFS through options, assemble a list of possible placements and paths (sequences of actions) for how to get there.
-        pass
+    def chooseActions(self, state: GameState) -> Tuple[List[Action], bool]:
+        # TODO: Implement this
+        raise NotImplementedError

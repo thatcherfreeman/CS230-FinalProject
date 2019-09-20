@@ -22,10 +22,13 @@ def getClearPoints(numRowsCleared: int):
 class GameDriver:
     """A class containing a tetris game state as well as being able to update the state in response to player actions.
     This class contains all of the game logic for Tetris."""
-    def __init__(self):
-        self.state = GameState()
+    def __init__(self, state: GameState = None):
         self.pieceGenerator = PieceGenerator()
-        self.initGameState()
+        if state is not None:
+            self.state = state
+        else:
+            self.state = GameState()
+            self.initGameState()
 
     def initGameState(self):
         self.setCurrentPiece(self.pieceGenerator.generatePiece())

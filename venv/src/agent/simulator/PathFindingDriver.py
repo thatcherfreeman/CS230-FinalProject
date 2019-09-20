@@ -3,12 +3,14 @@ from typing import Tuple, Callable
 
 from game.Direction import Direction
 from game.GameDriver import GameDriver, PIECE_SPAWN_Y, PIECE_SPAWN_X
+from game.GameState import GameState
 from game.piece.TetrisPiece import TetrisPiece
 
 
-class ReversibleDriver(GameDriver):
-    def __init__(self):
-        super().__init__()
+class PathFindingDriver(GameDriver):
+    def __init__(self, state: GameState = None):
+        super().__init__(state)
+        # TODO: encapsulate reversal variables into a class
         """This is a deque of integers. The top element contains the number of actions to pop off of another deque to 
         reverse the most recent action. """
         self.numActionsToReverseDeque = deque()
@@ -100,12 +102,13 @@ class ReversibleDriver(GameDriver):
         self.setHoldAvailable(True)
         self.setCurrentPieceLocation(initialLocation)
 
-    def reverseFirstHoldOfGame(self):
+    def __reverseFirstHoldOfGame(self):
         # The first hold of the game involves a call to 'generateNewPiece()'. Reversing that will reset our current
         # piece and location to the state we want it to be in.
         self.state.heldPiece = None
         self.setHoldAvailable(True)
 
+    # TODO: While technically possible to hold a piece with this driver, it's not the expected behavior. Remove?
     def holdPiece(self):
         priorHeldPiece = self.state.heldPiece
         initialLocation = self.state.currentPieceLocation
@@ -113,7 +116,7 @@ class ReversibleDriver(GameDriver):
         if possible:
             self.setHoldAvailable(False)
             if priorHeldPiece is None:
-                self.__addRevertAction(self.reverseFirstHoldOfGame)
+                self.__addRevertAction(self.__reverseFirstHoldOfGame)
             else:
                 self.__addRevertAction(lambda: self.reverseHoldPiece(priorHeldPiece, self.state.heldPiece, initialLocation))
         return possible

@@ -16,3 +16,9 @@ class TetrisPiece:
 
     def rotateCCW(self):
         raise NotImplementedError
+
+    def getRotIdx(self):
+        raise NotImplementedError
+
+    def setRotIdx(self, rotIdx: int):
+        raise NotImplementedError

@@ -28,3 +28,6 @@ class FlyweightRotationTetrisPiece(TetrisPiece):
 
     def getRotIdx(self):
         return self.__rotIdx
+
+    def setRotIdx(self, rotIdx: int):
+        self.__rotIdx = rotIdx
