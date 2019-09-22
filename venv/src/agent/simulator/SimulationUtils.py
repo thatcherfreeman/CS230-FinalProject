@@ -35,6 +35,7 @@ def findPlacements(state: GameState) -> Tuple[List[PiecePlacement], List[List[Ac
     return placements
 
 
+# TODO: Create 'findPlacementsBFS' to find less wonky paths
 def findPlacementsDFS(driver: PathFindingDriver, exploredPlacements: Set, actions: Deque[Action]) ->\
         Tuple[List[PiecePlacement], List[List[Action]]]:
     """Recursively search for piece placements with DFS. Return two lists: final piece placements and the
