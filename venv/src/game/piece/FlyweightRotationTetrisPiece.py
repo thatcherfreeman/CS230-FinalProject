@@ -17,17 +17,15 @@ class FlyweightRotationTetrisPiece(TetrisPiece):
         super().__init__(self.__rotations[self.__rotIdx].overlay, self.__rotations[self.__rotIdx].wallKicks, color)
 
     def rotateCW(self):
-        self.__rotIdx = (self.__rotIdx + 1) % 4
-        self.overlay = self.__rotations[self.__rotIdx].overlay
-        self.wallKicks = self.__rotations[self.__rotIdx].wallKicks
+        self.setRotIdx((self.__rotIdx + 1) % 4)
 
     def rotateCCW(self):
-        self.__rotIdx = (self.__rotIdx - 1) % 4
-        self.overlay = self.__rotations[self.__rotIdx].overlay
-        self.wallKicks = self.__rotations[self.__rotIdx].wallKicks
+        self.setRotIdx((self.__rotIdx - 1) % 4)
 
     def getRotIdx(self):
         return self.__rotIdx
 
     def setRotIdx(self, rotIdx: int):
         self.__rotIdx = rotIdx
+        self.overlay = self.__rotations[self.__rotIdx].overlay
+        self.wallKicks = self.__rotations[self.__rotIdx].wallKicks

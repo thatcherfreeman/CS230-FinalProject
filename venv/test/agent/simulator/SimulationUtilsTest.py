@@ -1,20 +1,7 @@
 import unittest
 
 from agent.simulator import SimulationUtils
-from game.GameState import GameState, PLAYFIELD_WIDTH
-from game.piece.standard import StandardPieceFactory
-from game.piece.standard.StandardPiece import StandardPiece
-
-
-def initCornerState():
-    state = GameState()
-    piece = StandardPieceFactory.getPiece(StandardPiece.T)
-    state.currentPiece = piece
-    state.currentPieceLocation = (1, 1)
-    for x in range(3, PLAYFIELD_WIDTH):
-        for y in range(0, 5):
-            state.overlay.set(x, y, True)
-    return state
+from utils.GameStateUtils import initCornerState
 
 
 class SimulationUtilsTest(unittest.TestCase):

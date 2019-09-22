@@ -1,6 +1,5 @@
 from collections import deque
-from math import trunc
-from typing import List, Tuple, Deque
+from typing import List, Tuple
 
 from game.piece.TetrisPiece import TetrisPiece
 from game.Direction import Direction
@@ -20,7 +19,7 @@ def getClearPoints(numRowsCleared: int):
 
 
 class GameDriver:
-    """A class containing a tetris game state as well as being able to update the state in response to player actions.
+    """A class containing a tetris game state as well as being able to update the state in response to agent actions.
     This class contains all of the game logic for Tetris."""
     def __init__(self, state: GameState = None):
         self.pieceGenerator = PieceGenerator()
@@ -33,6 +32,9 @@ class GameDriver:
     def initGameState(self):
         self.setCurrentPiece(self.pieceGenerator.generatePiece())
         self.setCurrentPieceLocation((PIECE_SPAWN_X, PIECE_SPAWN_Y))
+        self.initPieceQueue()
+
+    def initPieceQueue(self):
         self.state.pieceQueue = deque()
         for i in range(0, PIECE_QUEUE_LEN):
             self.state.pieceQueue.append(self.pieceGenerator.generatePiece())
@@ -190,10 +192,13 @@ class GameDriver:
             rowsCleared += clearParams[2]
             self.clearBlock(clearParams[0], clearParams[1], clearParams[2])
         # Clear the top rows out
-        for y in range(PLAYFIELD_HEIGHT + BUFFER_HEIGHT - rowsCleared, PLAYFIELD_HEIGHT + BUFFER_HEIGHT):
+        self.clearTopRows(rowsCleared)
+        return points
+
+    def clearTopRows(self, rowsToClear: int):
+        for y in range(PLAYFIELD_HEIGHT + BUFFER_HEIGHT - rowsToClear, PLAYFIELD_HEIGHT + BUFFER_HEIGHT):
             for x in range(0, PLAYFIELD_WIDTH):
                 self.clearSquare(x, y)
-        return points
 
     def clearBlock(self, bottomRowToShift: int, topRowToShift: int, rowsToShift: int):
         """Clears a block of fully completed lines and shifts the contents of higher blocks down"""
