@@ -20,7 +20,7 @@ class SimulatorAgent(Agent):
         simulatorDriver = SimulatorDriver(state)
 
         # Next, evaluate each placement and keep the maximum
-        bestPlacementIdx, bestPlacementValue = self.findBestPlacement(simulatorDriver, placements)
+        bestPlacementValue, bestPlacementIdx = self.findBestPlacement(simulatorDriver, placements)
 
         # If we can hold the piece, evaluate that too
         if simulatorDriver.state.holdAvailable:
@@ -28,7 +28,6 @@ class SimulatorAgent(Agent):
             if holdPlacementValue > bestPlacementValue:
                 return [Action.HOLD], True
 
-        bestPlacement = placements[bestPlacementIdx]
         return actionSequences[bestPlacementIdx], True
 
     def findBestPlacement(self, driver: SimulatorDriver, placements: List[PiecePlacement]) -> Tuple:

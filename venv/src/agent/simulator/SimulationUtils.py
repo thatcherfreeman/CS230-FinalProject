@@ -17,7 +17,6 @@ QUICK_DROP_THRESHOLD = 2
 def findPlacements(state: GameState) -> Tuple[List[PiecePlacement], List[List[Action]]]:
     """Generates all possible placements of the current piece via DFS. Holding a piece is not considered here."""
     driver = PathFindingDriver(state)
-    actions = deque()
     # An optimization that moves the piece down until the topmost occupied space is 2 spaces below it,
     # this can reduce the amount of time it takes to complete this search from about 120 ms to about 11 ms on an
     # empty board without losing correctness. I can't fathom why the agent would try to stack a tall tower of pieces,
@@ -27,15 +26,23 @@ def findPlacements(state: GameState) -> Tuple[List[PiecePlacement], List[List[Ac
     if quickDropRows > 0:
         for i in range(0, quickDropRows):
             driver.movePiece(Direction.DOWN)
-            actions.append(Action.MOVE_DOWN)
         driver.commit()
-    placements = findPlacementsDFS(driver, set(), actions)
+    placements = findPlacementsBFS(driver)
+    actionSeqs = list()
     if quickDropRows > 0:
+        for i in range(0, len(placements[1])):
+            actionSeq = [Action.MOVE_DOWN] * quickDropRows
+            actionSeq.extend(placements[1][i])
+            actionSeqs.append(actionSeq)
         driver.revert()
-    return placements
+    else:
+        for i in range(0, len(placements[1])):
+            actionSeq = list()
+            actionSeq.extend(placements[1][i])
+            actionSeqs.append(actionSeq)
+    return placements[0], actionSeqs
 
 
-# TODO: Create 'findPlacementsBFS' to find less wonky paths
 def findPlacementsDFS(driver: PathFindingDriver, exploredPlacements: Set, actions: Deque[Action]) ->\
         Tuple[List[PiecePlacement], List[List[Action]]]:
     """Recursively search for piece placements with DFS. Return two lists: final piece placements and the
@@ -77,6 +84,46 @@ def findPlacementsDFS(driver: PathFindingDriver, exploredPlacements: Set, action
             placementsFound.extend(recursiveResult[0])
             placementPaths.extend(recursiveResult[1])
     return placementsFound, placementPaths
+
+
+def findPlacementsBFS(driver: PathFindingDriver):
+    searchQueue = deque()
+    placementDetails = dict()  # A dictionary that maps from PiecePlacement to (Action taken to get here, previous placement)
+    finalPlacements = list()
+
+    currentPlacement = placementFromState(driver.state)
+    searchQueue.append(currentPlacement)
+    placementDetails[currentPlacement] = None
+
+    while len(searchQueue) > 0:
+        currentPlacement = searchQueue.popleft()
+        driver.setToPlacement(currentPlacement)
+        driver.commit()
+        for action in ACTIONS_TO_TRY:
+            possible = action.func(driver)
+            if not possible:
+                if action == Action.MOVE_DOWN:
+                    finalPlacements.append(currentPlacement)
+                continue
+            driver.commit()
+            newPlacement = placementFromState(driver.state)
+            if newPlacement not in placementDetails:
+                placementDetails[newPlacement] = (action, currentPlacement)
+                searchQueue.append(newPlacement)
+            driver.revert()
+        driver.revert()
+
+    actionSequences = list()
+    for placement in finalPlacements:
+        actionSequence = deque()
+        currentPlacement = placement
+        while placementDetails[currentPlacement] is not None:
+            details = placementDetails[currentPlacement]
+            actionSequence.appendleft(details[0])
+            currentPlacement = details[1]
+        actionSequences.append(actionSequence)
+
+    return finalPlacements, actionSequences
 
 
 def placementFromState(state: GameState) -> PiecePlacement:

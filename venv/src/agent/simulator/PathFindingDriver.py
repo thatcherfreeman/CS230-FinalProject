@@ -1,6 +1,7 @@
 from collections import deque
 from typing import Tuple
 
+from agent.simulator.PiecePlacement import PiecePlacement
 from agent.simulator.StateChangesStack import StateChangesStack
 from game.Direction import Direction
 from game.GameDriver import GameDriver
@@ -21,6 +22,17 @@ class PathFindingDriver(GameDriver):
 
     def revert(self):
         self.__reversalStack.revert()
+
+    def __revertToPlacement(self, prevLocation: Tuple[int, int], prevRotIdx: int):
+        self.state.currentPieceLocation = prevLocation
+        self.state.currentPiece.setRotIdx(prevRotIdx)
+
+    def setToPlacement(self, placement: PiecePlacement):
+        prevLocation = self.state.currentPieceLocation
+        prevRotIdx = self.state.currentPiece.getRotIdx()
+        self.state.currentPiece.setRotIdx(placement.rotIdx)
+        self.state.currentPieceLocation = placement.location
+        self.__reversalStack.addRevertAction(lambda: self.__revertToPlacement(prevLocation, prevRotIdx))
 
     def movePiece(self, direction: Direction):
         initialLocation = self.state.currentPieceLocation
