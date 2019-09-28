@@ -9,3 +9,14 @@ class Grid:
 
     def set(self, x: int, y: int, value):
         raise NotImplementedError
+
+    def __eq__(self, other):
+        if type(other) != type(self):
+            return False
+        if other.height != self.height or other.width != self.width:
+            return False
+        for x in range(0, self.width):
+            for y in range(0, self.height):
+                if self.get(x, y) != other.get(x, y):
+                    return False
+        return True

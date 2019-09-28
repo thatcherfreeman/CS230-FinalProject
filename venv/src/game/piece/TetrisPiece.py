@@ -16,3 +16,14 @@ class TetrisPiece:
 
     def rotateCCW(self):
         raise NotImplementedError
+
+    def getRotIdx(self):
+        raise NotImplementedError
+
+    def setRotIdx(self, rotIdx: int):
+        raise NotImplementedError
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.overlay == other.overlay and self.getRotIdx() == other.getRotIdx()

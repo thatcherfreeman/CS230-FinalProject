@@ -13,7 +13,7 @@ class GameState:
     def __init__(self):
         # TODO: replace this with a bit-vector Grid implementation for lower memory use?
         grid: Grid = ListGrid(PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT + BUFFER_HEIGHT, False)
-        self.overlay = InvertedHeightOverlay(grid) # TODO: Remove this overlay later to save memory?
+        self.overlay = InvertedHeightOverlay(grid)  # TODO: Remove this overlay later to save memory?
         # TODO: It's debatable whether or not which pieces have shown up in the sequence so far should be an input to
         #  an agent. You could get better performance that way (sometimes the agent would know that the next piece
         #  that would be queued MUST be a T-piece, for example, and that way it could simulate/explore fewer game
@@ -25,3 +25,11 @@ class GameState:
         self.heldPiece = None
         self.holdAvailable = True
         self.points = 0
+
+    def __eq__(self, other):
+        if type(other) != type(self):
+            return False
+        overlaysMatch = self.overlay == other.overlay
+        piecesMatch = self.currentPiece == other.currentPiece
+        locationsMatch = self.currentPieceLocation == other.currentPieceLocation
+        return overlaysMatch and piecesMatch and locationsMatch

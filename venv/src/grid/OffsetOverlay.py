@@ -37,3 +37,10 @@ class OffsetOverlay(Grid):
             for x in range(1, self.width):
                 line = line + " " + row[x]
             print(line)
+
+    def __eq__(self, other):
+        if type(other) != type(self):
+            return False
+        if self.__startX != other.__startX or self.__startY != other.__startY:
+            return False
+        return self.__grid == other.__grid

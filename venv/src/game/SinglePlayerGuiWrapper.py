@@ -1,3 +1,4 @@
+import copy
 import threading
 import time
 import tkinter as tk
@@ -12,9 +13,6 @@ from gui.GameDisplay import GameDisplay
 FRAMES_PER_SECOND = 4
 SECONDS_PER_FRAME = 1/FRAMES_PER_SECOND
 
-# Every n frames, the piece will be pulled down.
-FRAMES_BETWEEN_GRAVITY = 5
-
 
 def sleepUntilEndOfFrame(startTime):
     now = datetime.utcnow()
@@ -23,13 +21,14 @@ def sleepUntilEndOfFrame(startTime):
     if seconds > 0:
         time.sleep(seconds)
 
-
+# TODO: This should be refactored but it's a lower priority than getting a reasonably impressive agent working
 class SinglePlayerGuiWrapper:
     """Call 'run()' to start a GUI-based game of tetris with the specified agent!"""
     def __init__(self, agent: Agent):
         self.agent = agent
         self.display = None
         self.driver = None
+        self.actions = deque()
         self.userKilledGame = False
 
     def run(self):
@@ -42,12 +41,13 @@ class SinglePlayerGuiWrapper:
         self.userKilledGame = True
         gameThread.join()
 
+    def resolveAction(self):
+        return self.actions.popleft()
+
     def gameLoop(self):
         gameOver = False
         finalize = False
         done = False
-        actions = deque()
-        gravityTicks = 0
         while not (gameOver or self.userKilledGame):
             startTime = datetime.utcnow()
             if finalize:
@@ -56,23 +56,19 @@ class SinglePlayerGuiWrapper:
                 self.driver.placePiece()
                 gameOver = self.driver.checkAndClearLines()[1]
                 self.driver.generateNewPiece()
+                self.actions.clear()
                 sleepUntilEndOfFrame(startTime)
                 continue
-            action = None
-            if len(actions) == 0 and not done:
+            if len(self.actions) == 0 and not done:
                 newActions, done = self.agent.chooseActions(self.driver.state)
-                for action in newActions:
-                    actions.append(action)
-            elif len(actions) == 0:
+                for seqAction in newActions:
+                    self.actions.append(seqAction)
+                continue
+            elif len(self.actions) == 0:
                 action = Action.MOVE_DOWN
             else:
-                if gravityTicks == 0:
-                    action = Action.MOVE_DOWN
-                else:
-                    action = actions.popleft()
-                gravityTicks = (gravityTicks + 1) % FRAMES_BETWEEN_GRAVITY
+                action = self.resolveAction()
             legalAction = action.func(self.driver)
             if not legalAction and action is Action.MOVE_DOWN:
                 finalize = True
-                self.driver.placePiece()
             sleepUntilEndOfFrame(startTime)

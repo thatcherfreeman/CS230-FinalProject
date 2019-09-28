@@ -1,7 +1,7 @@
 from agent.RandomAgent import RandomAgent
-from game.SinglePlayerGuiWrapper import SinglePlayerGuiWrapper
+from game.GravitySinglePlayerGuiWrapper import GravitySinglePlayerGuiWrapper
 
 if __name__ == '__main__':
     agent = RandomAgent()
-    wrapper = SinglePlayerGuiWrapper(agent)
+    wrapper = GravitySinglePlayerGuiWrapper(agent)
     wrapper.run()
