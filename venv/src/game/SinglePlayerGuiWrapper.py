@@ -1,3 +1,4 @@
+import copy
 import threading
 import time
 import tkinter as tk
@@ -55,13 +56,14 @@ class SinglePlayerGuiWrapper:
                 self.driver.placePiece()
                 gameOver = self.driver.checkAndClearLines()[1]
                 self.driver.generateNewPiece()
+                self.actions.clear()
                 sleepUntilEndOfFrame(startTime)
                 continue
-            action = None
             if len(self.actions) == 0 and not done:
                 newActions, done = self.agent.chooseActions(self.driver.state)
-                for action in newActions:
-                    self.actions.append(action)
+                for seqAction in newActions:
+                    self.actions.append(seqAction)
+                continue
             elif len(self.actions) == 0:
                 action = Action.MOVE_DOWN
             else:
@@ -69,5 +71,4 @@ class SinglePlayerGuiWrapper:
             legalAction = action.func(self.driver)
             if not legalAction and action is Action.MOVE_DOWN:
                 finalize = True
-                self.driver.placePiece()
             sleepUntilEndOfFrame(startTime)

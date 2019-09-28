@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 from agent.Action import Action
 from agent.Agent import Agent
 from agent.simulator import SimulationUtils
+from agent.simulator.PathFindingDriver import PathFindingDriver
 from agent.simulator.PiecePlacement import PiecePlacement
 from agent.simulator.SimulatorDriver import SimulatorDriver
 from agent.simulator.StateEvaluator import StateEvaluator
@@ -48,14 +49,14 @@ class SimulatorAgent(Agent):
         driver.commit()
 
         # Check for the base case, here it's 'piece queue is empty'
-        if len(driver.state.pieceQueue) == 0:
+        if self.isBaseCase(driver.state):
             placementValue = self.__evaluator.evaluate(driver.state, driver.pointsDelta)
             driver.revert()
             return placementValue
 
         # Compare all possible piece placements to find the best one
         placements = SimulationUtils.findPlacements(driver.state)[0]
-        bestPlacementValue = self.findBestPlacement(driver, placements)[1]
+        bestPlacementValue = self.findBestPlacement(driver, placements)[0]
 
         # Consider holding the current piece if it's a possibility
         if driver.state.holdAvailable:
@@ -70,3 +71,7 @@ class SimulatorAgent(Agent):
         bestPlacementValue = self.findBestPlacement(driver, placements)[0]
         driver.revert()
         return bestPlacementValue
+
+    def isBaseCase(self, state: GameState):
+        return len(state.pieceQueue) <= 1
+

@@ -1,4 +1,5 @@
 """The methods in this file initialize several different useful game states for tests."""
+from game.GameDriver import PIECE_SPAWN_X, PIECE_SPAWN_Y
 from game.GameState import GameState, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT
 from game.piece.standard import StandardPieceFactory
 from game.piece.standard.StandardPiece import StandardPiece
