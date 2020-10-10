@@ -1,4 +1,6 @@
 /venv/Include
 /venv/Lib
 /venv/Scripts
+.idea/*
+.vscode/*
 *.pyc
