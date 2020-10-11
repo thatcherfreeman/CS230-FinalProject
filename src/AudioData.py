@@ -13,7 +13,7 @@ class AudioData:
     sampling_freq: int
 
     '''An n by 1 numpy array where n is the length of the audio clip in seconds times the sampling frequency.
-    Exactly one audio channel is assumed for simplicity. Each element in the array is a 16-bit integer.'''
+    Exactly one audio channel is assumed for simplicity. Each element in the array is a 32-bit float.'''
     time_amplitudes: np.ndarray
 
     def __init__(self, wav_filepath: Optional[str] = None,
@@ -35,9 +35,8 @@ class AudioData:
         self.sampling_freq = fs
         # Save only the audio from the first channel. Later, it might be useful to extract multiple channels.
         # This comes with the sizable assumption that the voice data is in the first channel. If this turns out to be
-        # untrue, we can try to superimpose all of the channels on top of each other. If we do this, remember to
-        # normalize by the number of channels first to avoid int16 overflow/underflow.
-        self.time_amplitudes = data[:, 0]
+        # untrue, we can try to superimpose all of the channels on top of each other.
+        self.time_amplitudes = data[:, 0].astype(np.float32)
 
     def save(self, filepath):
         with open(filepath, 'wb') as file:

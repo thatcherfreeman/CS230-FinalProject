@@ -20,7 +20,7 @@ def play(audiodata: AudioData):
             right_bound = min(left_bound + AUDIO_WRITE_CHUNK_SIZE, num_samples)
             if left_bound == right_bound:
                 break
-            chunk = audiodata.time_amplitudes[left_bound:right_bound]
+            chunk = audiodata.time_amplitudes[left_bound:right_bound].astype(np.int16)
             stream.write(chunk.tobytes())
     finally:
         stream.stop_stream()
@@ -51,7 +51,12 @@ def superimpose(audio_1: AudioData, audio_2: AudioData) -> AudioData:
         short_data = audio_1
 
     # For now, we'll overlay the shorter piece at the beginning of the longer one. This shouldn't be too hard to change later if need be.
-    # Make sure to divide samples by 2 before superposition to avoid integer overflow/underflow
-    new_data = copy.deepcopy(long_data.time_amplitudes.astype(np.float32))/2
-    new_data[0:short_data.time_amplitudes.shape[0]] += short_data.time_amplitudes.astype(np.float32)/2
-    return AudioData(manual_init=(long_data.sampling_freq, new_data.astype(np.int16)))
+    # First, we normalize the vectors by their peak-to-peak distances (max point - min point)
+    long_data_p2p = np.max(long_data.time_amplitudes) - np.min(long_data.time_amplitudes)
+    short_data_p2p = np.max(short_data.time_amplitudes) - np.min(short_data.time_amplitudes)
+    new_data = copy.deepcopy(long_data.time_amplitudes) / long_data_p2p
+    new_data[0:short_data.time_amplitudes.shape[0]] += short_data.time_amplitudes/short_data_p2p
+    # scale back up by the average of the peak-to-peak distances in the audio sources
+    # Note: This may not work very well if one of the samples is really quiet
+    new_data *= (long_data_p2p + short_data_p2p)/2
+    return AudioData(manual_init=(long_data.sampling_freq, new_data))
