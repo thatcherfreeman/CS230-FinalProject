@@ -6,7 +6,7 @@ from scipy.io import wavfile
 import AudioDataUtils
 
 
-"""A representation of audio data."""
+"""A representation of audio data. Try to use this as if it were immutable."""
 class AudioData:
     '''Sampling frequency in Hz. If these differ between two AudioData objects, overlaying one onto the other will
      involve upsampling or downsampling.'''
