@@ -60,3 +60,18 @@ def superimpose(audio_1: AudioData, audio_2: AudioData) -> AudioData:
     # Note: This may not work very well if one of the samples is really quiet
     new_data *= (long_data_p2p + short_data_p2p)/2
     return AudioData(manual_init=(long_data.sampling_freq, new_data))
+
+
+# returns a *separate* downsampled instance, leaving the parameter audiodata unchanged
+# For now, we only support downsampling to an integer multiple of the original sample period.
+# WARNING: downsampling by too much may lead to significant aliasing effects!
+# An aliasing problem can be diagnosed by comparing corresponding frequency terms in the old sequence's FFT and the new
+# sequence's FFT. Low-pass filters can be used before downsampling to avoid the effects of aliasing.
+def downsample(audiodata: AudioData, divisor: int) -> AudioData:
+    if divisor <= 0:
+        raise ValueError("The divisor parameter must be a positive integer")
+    if audiodata.sampling_freq % divisor != 0:
+        raise ValueError("The original sampling frequency isn't cleanly divisible by that divisor.")
+    new_frequency = audiodata.sampling_freq//divisor
+    new_time_amplitudes = audiodata.time_amplitudes[0::divisor]
+    return AudioData(manual_init=(new_frequency, new_time_amplitudes))
