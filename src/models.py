@@ -32,3 +32,10 @@ class FCModel(nn.Module):
         y_pred = torch.reshape(y_flat, x.shape)
         return y_pred
 
+
+def get_model(model_name: str) -> nn.Module:
+    models = [FCModel]
+    for m in models:
+        if m.__name__ == model_name:
+            return m
+    assert False, f'Could not find model {model_name}!'

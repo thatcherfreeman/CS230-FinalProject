@@ -1,4 +1,11 @@
 import argparse
+import os
+
+def add_experiment(args: argparse.Namespace) -> None:
+    if args.save_path not in os.listdir('.'):
+        os.makedirs(args.save_path)
+    num_folders = len(os.listdir(args.save_path))
+    args.experiment = f'{args.model}_exp{num_folders}'
 
 def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
@@ -54,4 +61,15 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         type=str,
         default=None,
         help='specify path to load the model at the given path before training.'
+    )
+    parser.add_argument(
+        '--log_dir',
+        type=str,
+        default='logs',
+        help='Directory to store tensorboard logs'
+    )
+    parser.add_argument(
+        '--model',
+        type=str,
+        default='FCModel'
     )

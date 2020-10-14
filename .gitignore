@@ -11,3 +11,5 @@
 .mypy_cache*
 tmp*
 audio*
+logs*
+checkpoints*
