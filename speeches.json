@@ -1,0 +1,29 @@
+{
+  "speeches": [
+    {
+      "url": "https://www.youtube.com/watch?v=xkqZYVyM4L4",
+      "trim_left_seconds": 20
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=mXD4zPY4Ai0"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=LvIS5Aebjk4",
+      "trim_left_seconds": 153,
+      "trim_right_seconds": 85
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=I_NCPFZODpc",
+      "trim_left_seconds": 913,
+      "trim_right_seconds": 180
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=7XMcrkBM4tA",
+      "trim_right_seconds": 240
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=h2O3Z3IAkUc",
+      "trim_right_seconds": 11
+    }
+  ]
+}
