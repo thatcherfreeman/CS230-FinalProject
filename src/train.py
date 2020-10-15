@@ -94,16 +94,16 @@ def main():
 
     # Load datasets somehow, replace this with real data, put train/val data on `device` for all of training.
     train_n = 10
-    x_train = torch.rand((train_n, 100, 20)).to(device)
-    y_train = torch.rand((train_n, 100, 20)).to(device)
+    x_train = torch.rand((train_n, 1, 512, 128)).to(device)
+    y_train = torch.rand((train_n, 1, 512, 128)).to(device)
     val_n = 2
-    x_dev = torch.rand((val_n, 100, 20)).to(device)
-    y_dev = torch.rand((val_n, 100, 20)).to(device)
+    x_dev = torch.rand((val_n, 1, 512, 128)).to(device)
+    y_dev = torch.rand((val_n, 1, 512, 128)).to(device)
     train_dl = data.DataLoader(data.TensorDataset(x_train, y_train), batch_size=args.train_batch_size, shuffle=True)
     dev_dl = data.DataLoader(data.TensorDataset(x_dev, y_dev), batch_size=args.val_batch_size, shuffle=False)
 
     # Initialize a model
-    model = models.get_model(args.model)(num_features=2000)
+    model = models.get_model(args.model)()
 
     # load from checkpoint if path specified
     if args.load_path is not None:
