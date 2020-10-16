@@ -71,5 +71,5 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--model',
         type=str,
-        default='ResidualUNet'
+        default='UNet'
     )
