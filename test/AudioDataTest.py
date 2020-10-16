@@ -1,7 +1,7 @@
 import unittest
 import AudioDataUtils
 from AudioData import AudioData
-
+from StftData import StftData
 
 PATH_TO_SIMPLE_WAV = "../example_data/simple.wav"
 PATH_TO_ALLSTAR_WAV = "../example_data/allstar.wav"
@@ -28,6 +28,15 @@ class AudioDataTestCase(unittest.TestCase):
         allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
         downsampled: AudioData = AudioDataUtils.downsample(allstar, 4)
         AudioDataUtils.play(downsampled)
+
+    def test_stft_and_back(self):
+        allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
+        print("Playing original...")
+        AudioDataUtils.play(allstar)
+        allstar_freq: StftData = StftData(audiodata=allstar)
+        allstar_reconstruction = allstar_freq.invert()
+        print("Playing reconstructed...")
+        AudioDataUtils.play(allstar_reconstruction)
 
 
 if __name__ == '__main__':
