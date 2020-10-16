@@ -1,3 +1,4 @@
+import pickle
 from typing import Optional, Any
 import numpy as np
 from scipy import signal
@@ -37,8 +38,7 @@ class StftData:
                 signal.stft(audiodata.time_amplitudes, fs=self.fs, window=self.args.window,
                             nperseg=self.args.nperseg, noverlap=self.args.noverlap)
         elif pickle_file is not None:
-            # TODO: init from pickle file
-            raise NotImplementedError
+            self.load(pickle_file)
         else:
             raise ValueError("You must provide either a pickle file or some STFT args and audio data.")
 
@@ -52,3 +52,11 @@ class StftData:
     def save_spectrogram(self, filepath: str):
         # TODO: implement this
         raise NotImplementedError
+
+    def save(self, filepath):
+        with open(filepath, 'wb') as file:
+            pickle.dump((self.sample_freqs, self.segment_times, self.data, self.fs, self.args), file, -1)
+
+    def load(self, filepath):
+        with open(filepath, 'rb') as file:
+            self.sample_freqs, self.segment_times, self.data, self.fs, self.args = pickle.load(file)
