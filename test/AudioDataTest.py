@@ -1,6 +1,6 @@
 import unittest
 import AudioDataUtils
-from AudioData import AudioData
+from AudioDataUtils import AudioData
 from StftData import StftData, StftArgs
 
 PATH_TO_SIMPLE_WAV = "../example_data/simple.wav"

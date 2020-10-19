@@ -2,7 +2,9 @@ import pickle
 from typing import Optional, Any
 import numpy as np
 from scipy import signal
-from AudioData import AudioData
+from src.AudioDataUtils import AudioData
+import matplotlib.pyplot as plt
+from skimage.transform import resize
 
 
 # parameters used for stft (needed for inverse stft)
@@ -49,9 +51,28 @@ class StftData:
         return AudioData(manual_init=(int(self.fs), time_amplitudes))
 
     """Saves the scipy-generated frequency spectrogram of the data to a file."""
-    def save_spectrogram(self, filepath: str):
-        # TODO: implement this
-        raise NotImplementedError
+    def save_spectrogram(self, filepath: str, show: bool = False):
+        magnitude = np.clip(np.log(np.abs(self.data).astype(np.float32)), 0, 10)
+        # Resize to make y-axis hertz look good
+        magnitude = resize(magnitude, (np.max(self.sample_freqs), magnitude.shape[1]))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        plt.imshow(magnitude, aspect='auto', cmap='viridis')
+        plt.colorbar()
+        plt.gca().invert_yaxis() # put high freq on top
+
+        # Lie about axis limits lol
+        ax.set_axis_off()
+        ax2 = fig.add_axes(ax.get_position())
+        ax2.patch.set_alpha(0)
+        ax2.set_xlim(left=self.segment_times[0], right=self.segment_times[-1])
+        ax2.set_ylim(bottom=self.segment_times[0], top=self.sample_freqs[-1])
+        plt.ylabel("Frequency (Hz)")
+        plt.xlabel("Time (seconds)")
+        if show:
+            plt.show()
+        plt.savefig(filepath)
 
     def save(self, filepath):
         with open(filepath, 'wb') as file:
