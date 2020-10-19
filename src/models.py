@@ -197,7 +197,7 @@ class UNet(nn.Module):
         out    = self.decoder1(d_out1, x) # Not sure on this part lol
 
         out = self.sigmoid(out)
-        return out
+        return x * out
 
 class ResidualUNet(nn.Module):
     def __init__(self, num_features: Optional[int] = None, drop_p: float = 0.5):
@@ -237,7 +237,7 @@ class ResidualUNet(nn.Module):
         out    = self.decoder1(d_out1, x) # Not sure on this part lol
 
         out = self.sigmoid(out)
-        return out
+        return x * out
 
 
 def get_model(model_name: str) -> type:
