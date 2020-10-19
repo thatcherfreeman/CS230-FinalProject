@@ -34,6 +34,34 @@ class FCModel(nn.Module):
         return y_pred
 
 
+class ResidualFCModel(nn.Module):
+    '''
+    Similar to previous model except we have a residual connection between FC layers
+    '''
+    def __init__(self, num_features=512*128):
+        super(ResidualFCModel, self).__init__()
+        self.num_features = num_features
+        self.linear1 = nn.Linear(num_features, num_features)
+        self.relu1 = nn.ReLU()
+        self.linear2 = nn.Linear(num_features, num_features)
+        self.relu2 = nn.ReLU()
+        self.linear3 = nn.Linear(num_features, num_features),
+        self.sigmoid3 = nn.Sigmoid()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        assert len(x.shape) == 4
+        assert x.shape[2] * x.shape[3] == self.num_features
+
+        x_flat = torch.reshape(x, (x.shape[0], self.num_features))
+        x_flat1 = self.relu1(self.linear1(x_flat))
+        x_flat2 = self.relu2(self.linear2(x_flat1) + x_flat)
+        y_flat = self.sigmoid3(self.lienar3(x_flat2))
+
+        assert y_flat.shape == x_flat.shape
+        y_pred = torch.reshape(y_flat, x.shape)
+        return y_pred
+
+
 class Encoder(nn.Module):
     def __init__(
         self,
@@ -241,7 +269,7 @@ class ResidualUNet(nn.Module):
 
 
 def get_model(model_name: str) -> type:
-    models = [FCModel, UNet, ResidualUNet]
+    models = [FCModel, ResidualFCModel, UNet, ResidualUNet]
     for m in models:
         if m.__name__ == model_name:
             return m
