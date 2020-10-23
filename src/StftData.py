@@ -53,8 +53,6 @@ class StftData:
     """Saves the scipy-generated frequency spectrogram of the data to a file."""
     def save_spectrogram(self, filepath: str, show: bool = False):
         magnitude = np.clip(np.log(np.abs(self.data).astype(np.float32)), 0, 10)
-        # Resize to make y-axis hertz look good
-        magnitude = resize(magnitude, (np.max(self.sample_freqs), magnitude.shape[1]))
 
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
