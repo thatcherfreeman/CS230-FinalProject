@@ -120,3 +120,25 @@ def downsample(audiodata: AudioData, divisor: int) -> AudioData:
     new_time_amplitudes = audiodata.time_amplitudes[0::divisor]
     return AudioData(manual_init=(new_frequency, new_time_amplitudes))
 
+
+# Given a long audiodata object, slices it up into snippets of length 'snippet_len_ms' milliseconds. Excess audio data is discarded.
+# All of the resulting audiodata objects are pickled and saved as different files in the provided directory.
+# Optionally, an overlap factor (between 0 and 1, excluding 1) may be specified. If the overlap factor > 0,
+# two adjacent snippets will share that fraction of samples, rounded down to the nearest sample.
+# You may want to downsample before invoking this.
+def cut_into_snippets(audiodata: AudioData, dir_name: str, snippet_len_ms: float, snippet_overlap: float = 0.):
+    if snippet_overlap < 0 or snippet_overlap >= 1:
+        raise ValueError("snippet_overlap must be in [0,1). Provided value, {}, is illegal.".format(snippet_overlap))
+    samples_per_snippet = int(snippet_len_ms/1000 * audiodata.sampling_freq)
+    overlap_samples = int(samples_per_snippet * snippet_overlap)
+
+    num_snippets_to_create = len(audiodata.time_amplitudes - samples_per_snippet)//(samples_per_snippet - overlap_samples)
+    est_disk_usage = (num_snippets_to_create * samples_per_snippet * 2)/(1024**2)  # each sample is 2 bytes, 1 MB = 1024**2 bytes. This approach ignores file headers.
+    print("Creating {} pickled audiodata files. Lower bound on new disk usage from this operation: {:.4f} MB".format(num_snippets_to_create, est_disk_usage))
+
+    filenum = 0
+    for i in range(0, len(audiodata.time_amplitudes) - samples_per_snippet, samples_per_snippet - overlap_samples):
+        end_idx = i + samples_per_snippet
+        snip_audiodata: AudioData = AudioData(manual_init=(audiodata.sampling_freq, audiodata.time_amplitudes[i:end_idx]))
+        snip_audiodata.save(dir_name + "/snippet{}.pkl".format(filenum))
+        filenum += 1
