@@ -1,6 +1,7 @@
+import os
 import unittest
 
-from src.AudioDataUtils import AudioData, play, superimpose, downsample
+from src.AudioDataUtils import AudioData, play, superimpose, downsample, cut_into_snippets
 from src.StftData import StftData, StftArgs
 
 PATH_TO_SIMPLE_WAV = "example_data/simple.wav"
@@ -45,6 +46,15 @@ class AudioDataTestCase(unittest.TestCase):
         loaded_freq: StftData = StftData(pickle_file="test_data/pickled_freqdata.pkl")
         allstar_reconstruction = loaded_freq.invert()
         play(allstar_reconstruction)
+
+    def test_cut_into_snippets(self):
+        snippet_dir = "test_data/snippets"
+
+        allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
+        cut_into_snippets(allstar, snippet_dir, 500, snippet_overlap=0.4)
+        for filename in os.listdir(snippet_dir):
+            snip_data: AudioData = AudioData(pickled_filepath=snippet_dir + "/" + filename)
+            play(snip_data)
 
 
 if __name__ == '__main__':
