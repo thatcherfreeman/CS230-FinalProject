@@ -1,11 +1,12 @@
-import os
 import unittest
 
+import DataPrep
 from src.AudioDataUtils import AudioData, play, superimpose, downsample, cut_into_snippets, trim
 from src.StftData import StftData, StftArgs
 
 PATH_TO_SIMPLE_WAV = "example_data/simple.wav"
 PATH_TO_ALLSTAR_WAV = "example_data/allstar.wav"
+PATH_TO_BIDEN_PKL = "example_data/biden_short.pkl"
 
 
 class AudioDataTestCase(unittest.TestCase):
@@ -39,27 +40,13 @@ class AudioDataTestCase(unittest.TestCase):
         print("Playing reconstructed...")
         play(allstar_reconstruction)
 
-    def test_pickle_stft_and_back(self):
-        allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
-        allstar_freq: StftData = StftData(audiodata=allstar, args=StftArgs(nperseg=1024, noverlap=3))
-        allstar_freq.save("test_data/pickled_freqdata.pkl")
-        loaded_freq: StftData = StftData(pickle_file="test_data/pickled_freqdata.pkl")
-        allstar_reconstruction = loaded_freq.invert()
-        play(allstar_reconstruction)
-
-    def test_cut_into_snippets(self):
-        snippet_dir = "test_data/snippets"
-
-        allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
-        cut_into_snippets(allstar, snippet_dir, 500, snippet_overlap=0.4)
-        for filename in os.listdir(snippet_dir):
-            snip_data: AudioData = AudioData(pickled_filepath=snippet_dir + "/" + filename)
-            play(snip_data)
-
-    def test_trim_audio_data(self):
-        allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
-        trimmed: AudioData = trim(allstar, trim_start=0.5, trim_end=0.4)
-        play(trimmed)
+    def test_trim_freq_data(self):
+        biden = AudioData(pickled_filepath=PATH_TO_BIDEN_PKL)
+        args = StftArgs(nperseg=1022, noverlap=511)
+        freq_data = StftData(args=args, audiodata=biden)
+        freq_data = DataPrep.trim_stft_data(freq_data)
+        new_biden = freq_data.invert()
+        play(new_biden)
 
 
 if __name__ == '__main__':
