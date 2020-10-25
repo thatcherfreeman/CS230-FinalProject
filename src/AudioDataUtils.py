@@ -145,3 +145,9 @@ def cut_into_snippets(audiodata: AudioData, dir_name: str, snippet_len_ms: float
         snip_audiodata: AudioData = AudioData(manual_init=(audiodata.sampling_freq, audiodata.time_amplitudes[i:end_idx]))
         snip_audiodata.save(dir_name + "/snippet{}.pkl".format(filenum))
         filenum += 1
+
+# creates a new audiodata object with the first 'trim_start' seconds removed and the last 'trim_start' seconds removed.
+def trim(audiodata: AudioData, trim_start: float = 0., trim_end: float = 0) -> AudioData:
+    samples_start = int(trim_start*audiodata.sampling_freq)
+    samples_end = len(audiodata.time_amplitudes) - int(trim_end*audiodata.sampling_freq)
+    return AudioData(manual_init=(audiodata.sampling_freq, audiodata.time_amplitudes[samples_start:samples_end]))
