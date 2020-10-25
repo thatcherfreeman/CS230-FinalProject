@@ -42,7 +42,10 @@ class AudioData:
         # Save only the audio from the first channel. Later, it might be useful to extract multiple channels.
         # This comes with the sizable assumption that the voice data is in the first channel. If this turns out to be
         # untrue, we can try to superimpose all of the channels on top of each other.
-        self.time_amplitudes = data[:, 0].astype(np.float32)
+        if len(data.shape) == 1:
+            self.time_amplitudes = data.astype(np.float32)
+        else:
+            self.time_amplitudes = data[:, 0].astype(np.float32)
 
     def save(self, filepath):
         with open(filepath, 'wb') as file:
