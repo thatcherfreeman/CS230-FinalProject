@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from src.AudioDataUtils import AudioData, play, superimpose, downsample, cut_into_snippets
+from src.AudioDataUtils import AudioData, play, superimpose, downsample, cut_into_snippets, trim
 from src.StftData import StftData, StftArgs
 
 PATH_TO_SIMPLE_WAV = "example_data/simple.wav"
@@ -55,6 +55,11 @@ class AudioDataTestCase(unittest.TestCase):
         for filename in os.listdir(snippet_dir):
             snip_data: AudioData = AudioData(pickled_filepath=snippet_dir + "/" + filename)
             play(snip_data)
+
+    def test_trim_audio_data(self):
+        allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
+        trimmed: AudioData = trim(allstar, trim_start=0.5, trim_end=0.4)
+        play(trimmed)
 
 
 if __name__ == '__main__':
