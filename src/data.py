@@ -41,7 +41,8 @@ def to_wav(mp4_path: str, trim_left: t.Optional[int] = None, trim_right: t.Optio
     if trim_right:
         end_time -= trim_right
     subprocess.run([
-        "ffmpeg", "-i", mp4_path, "-bitexact", "-acodec", "pcm_s16le", "-ar", "22050", "-ac", "1",
+        "ffmpeg", "-i", mp4_path,
+        # "ffmpeg", "-i", mp4_path, "-bitexact", "-acodec", "pcm_s16le", "-ar", "22050", "-ac", "1",
         "-ss", str(start_time), "-to", str(end_time), wav_filename
     ])
     return wav_filename

@@ -13,3 +13,4 @@ tmp*
 audio*
 logs*
 checkpoints*
+data/*

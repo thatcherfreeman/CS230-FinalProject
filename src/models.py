@@ -16,14 +16,15 @@ class FCModel(nn.Module):
         self.num_features = num_features
         self.model = nn.Sequential(
             nn.Linear(num_features, num_features),
-            nn.Sigmoid(),
+            nn.Tanh(),
             nn.Linear(num_features, num_features),
-            nn.Sigmoid(),
+            nn.Tanh(),
             nn.Linear(num_features, num_features),
             nn.Sigmoid()
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        assert x.dtype == torch.float32
         assert len(x.shape) == 4
         assert x.shape[2] * x.shape[3] == self.num_features
 
@@ -55,7 +56,7 @@ class ResidualFCModel(nn.Module):
         x_flat = torch.reshape(x, (x.shape[0], self.num_features))
         x_flat1 = self.relu1(self.linear1(x_flat))
         x_flat2 = self.relu2(self.linear2(x_flat1) + x_flat)
-        y_flat = self.sigmoid3(self.lienar3(x_flat2))
+        y_flat = self.sigmoid3(self.linear3(x_flat2))
 
         assert y_flat.shape == x_flat.shape
         y_pred = torch.reshape(y_flat, x.shape)
@@ -209,6 +210,7 @@ class UNet(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        assert x.dtype == torch.float32
         assert len(x.shape) == 4
         e_out1 = self.encoder1(x)
         e_out2 = self.encoder2(e_out1)
@@ -225,7 +227,7 @@ class UNet(nn.Module):
         out    = self.decoder1(d_out1, x) # Not sure on this part lol
 
         out = self.sigmoid(out)
-        return x * out
+        return out
 
 class ResidualUNet(nn.Module):
     def __init__(self, num_features: Optional[int] = None, drop_p: float = 0.5):
@@ -249,6 +251,7 @@ class ResidualUNet(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        assert x.dtype == torch.float32
         assert len(x.shape) == 4
         e_out1 = self.encoder1(x)
         e_out2 = self.encoder2(e_out1)
@@ -265,11 +268,20 @@ class ResidualUNet(nn.Module):
         out    = self.decoder1(d_out1, x) # Not sure on this part lol
 
         out = self.sigmoid(out)
-        return x * out
+        return out
+
+class GroundTruth(nn.Module):
+    def __init__(self):
+        super(GroundTruth, self).__init__()
+        self.linear = nn.Linear(1, 1)
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return y
+
 
 
 def get_model(model_name: str) -> type:
-    models = [FCModel, ResidualFCModel, UNet, ResidualUNet]
+    models = [FCModel, ResidualFCModel, UNet, ResidualUNet, GroundTruth]
     for m in models:
         if m.__name__ == model_name:
             return m

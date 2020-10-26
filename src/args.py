@@ -17,19 +17,19 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--train_batch_size',
         type=int,
-        default=1,
+        default=5,
         help='training mini-batch size',
     )
     parser.add_argument(
         '--val_batch_size',
         type=int,
-        default=1,
+        default=500,
         help='validation mini-batch size',
     )
     parser.add_argument(
         '--train_epochs',
         type=int,
-        default=100,
+        default=3,
         help='Number of epochs to train for',
     )
     parser.add_argument(
@@ -66,10 +66,27 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         '--log_dir',
         type=str,
         default='logs',
-        help='Directory to store tensorboard logs'
+        help='Directory to store tensorboard logs',
     )
     parser.add_argument(
         '--model',
         type=str,
-        default='UNet'
+        default='UNet',
+        help='choose the model to train',
+    )
+    parser.add_argument(
+        '--dataset_dir',
+        type=str,
+        default='/home/ubuntu/data/training_data1',
+        help='path to directory containing .pkl files',
+    )
+    parser.add_argument(
+        '--skip_scheduler',
+        action='store_true',
+        help='Use this flag to avoid learning rate scheduling.',
+    )
+    parser.add_argument(
+        '--reload_dataset',
+        action='store_true',
+        help='use this flag to reload/recompute the training datset.'
     )

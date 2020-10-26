@@ -1,10 +1,10 @@
 import pickle
 from typing import Optional, Any
-import numpy as np
-from scipy import signal
-from src.AudioDataUtils import AudioData
-import matplotlib.pyplot as plt
-from skimage.transform import resize
+import numpy as np # type: ignore
+from scipy import signal # type: ignore
+from AudioDataUtils import AudioData
+import matplotlib.pyplot as plt # type: ignore
+from skimage.transform import resize # type: ignore
 
 
 # parameters used for stft (needed for inverse stft)
@@ -32,7 +32,7 @@ class StftData:
     def __init__(self, args: Optional[StftArgs] = None, audiodata: Optional[AudioData] = None,
                  pickle_file: Optional[str] = None):
         if audiodata is not None:
-            self.args = args
+            self.args = args # type: ignore
             if self.args is None:
                 self.args = StftArgs()
             self.fs = audiodata.sampling_freq
@@ -51,9 +51,9 @@ class StftData:
         return AudioData(manual_init=(int(self.fs), time_amplitudes))
 
     """Saves the scipy-generated frequency spectrogram of the data to a file."""
-    def save_spectrogram(self, filepath: str, show: bool = False):
+    def save_spectrogram(self, filepath: Optional[str]=None, show: bool = False):
         magnitude = np.clip(np.log(np.abs(self.data).astype(np.float32)), 0, 10)
-
+        magnitude = np.log(np.abs(self.data).astype(np.float32)) + 8
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         plt.imshow(magnitude, aspect='auto', cmap='viridis')
@@ -68,9 +68,10 @@ class StftData:
         ax2.set_ylim(bottom=self.segment_times[0], top=self.sample_freqs[-1])
         plt.ylabel("Frequency (Hz)")
         plt.xlabel("Time (seconds)")
+        if filepath is not None:
+            plt.savefig(filepath)
         if show:
             plt.show()
-        plt.savefig(filepath)
 
     def save(self, filepath):
         with open(filepath, 'wb') as file:

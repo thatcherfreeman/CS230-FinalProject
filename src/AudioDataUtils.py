@@ -2,10 +2,10 @@ import copy
 import sys
 import wave
 
-import numpy as np
+import numpy as np # type: ignore
 import pickle
-import pyaudio
-from scipy.io import wavfile
+import pyaudio # type: ignore
+from scipy.io import wavfile # type: ignore
 from typing import Tuple, Optional
 
 BYTES_PER_SAMPLE = 2

@@ -7,3 +7,4 @@ tqdm
 mypy
 pytube3==9.6.4
 scikit-image
+tensorboard

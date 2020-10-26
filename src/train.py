@@ -18,63 +18,100 @@ def train_model(
     dev_dl: data.DataLoader,
     model: nn.Module,
     optimizer: optim.Optimizer,
+    lr_scheduler: optim.lr_scheduler._LRScheduler,
     args: argparse.Namespace,
 ) -> nn.Module:
 
     device = model_utils.get_device()
-    loss_fn = nn.functional.binary_cross_entropy
+    # loss_fn = nn.functional.binary_cross_entropy
+    loss_fn = model_utils.l1_norm_loss
     best_val_loss = torch.tensor(float('inf'))
     saved_checkpoints = []
     writer = SummaryWriter(log_dir=f'{args.log_dir}/{args.experiment}')
 
     for e in range(1, args.train_epochs + 1):
         print(f'Training epoch {e}...')
+        torch.cuda.empty_cache()
 
         # Training portion
         with tqdm(total=args.train_batch_size * len(train_dl)) as progress_bar:
             model.train()
-            for i, (x_batch, y_batch) in enumerate(train_dl):
-                x_batch = x_batch.to(device)
-                y_batch = y_batch.to(device)
+            for i, (x_batch, y_batch, mask_batch) in enumerate(train_dl):
+                x_batch = x_batch.abs().to(device)
+                y_batch = y_batch.abs().to(device)
+                mask_batch = mask_batch.to(device)
+
+                x_batch = torch.clamp_min(torch.log(x_batch), 0)
+                y_batch = torch.clamp_min(torch.log(y_batch), 0)
 
                 # Forward pass on model
                 optimizer.zero_grad()
+<<<<<<< HEAD
+                y_pred = model(x_batch, mask_batch)
+                loss = loss_fn(y_pred * x_batch, y_batch)
+
+                # Backward pass and optimization
+                # loss.backward()
+                # optimizer.step()
+                # if not args.skip_scheduler:
+                #     lr_scheduler.step(loss)
+=======
                 y_pred = model(x_batch)
-                loss = loss_fn(y_pred, y_batch)
+                loss = loss_fn(y_pred * x_batch, y_batch)
 
                 # Backward pass and optimization
                 loss.backward()
                 optimizer.step()
+                if not args.skip_scheduler:
+                    lr_scheduler.step(loss)
+>>>>>>> Reads training data from arg directory, generates masks, trains net
 
                 progress_bar.update(len(x_batch))
                 progress_bar.set_postfix(loss=loss.item())
-                writer.add_scalar("Loss/train", loss, e * len(train_dl) + i)
+                writer.add_scalar("Loss/train", loss, ((e - 1) * len(train_dl) + i) * args.train_batch_size)
 
                 del x_batch
                 del y_batch
+                del y_pred
+                del loss
+                del mask_batch
 
+        torch.cuda.empty_cache()
         # Validation portion
         with tqdm(total=args.val_batch_size * len(dev_dl)) as progress_bar:
             model.eval()
-            val_loss = torch.tensor(0.0).to(device)
+            val_loss = 0.0
             num_batches_processed = 0
-            for i, (x_batch, y_batch) in enumerate(dev_dl):
-                x_batch = x_batch.to(device)
-                y_batch = y_batch.to(device)
+            for i, (x_batch, y_batch, mask_batch) in enumerate(dev_dl):
+                x_batch = x_batch.abs().to(device)
+                y_batch = y_batch.abs().to(device)
+                mask_batch = mask_batch.to(device)
 
                 # Forward pass on model
-                y_pred = model(x_batch)
-                loss = loss_fn(y_pred, y_batch)
+<<<<<<< HEAD
+                y_pred = model(torch.clamp_min(torch.log(x_batch), 0), mask_batch)
+=======
+                y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
+>>>>>>> Reads training data from arg directory, generates masks, trains net
+                y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.5)
+                loss = loss_fn(y_pred_mask * x_batch, y_batch)
 
-                val_loss += loss
+                val_loss += loss.item()
                 num_batches_processed += 1
 
                 progress_bar.update(len(x_batch))
-                progress_bar.set_postfix(val_loss=val_loss.item() / num_batches_processed)
-                writer.add_scalar("Loss/val", loss, e * len(train_dl) + i)
+                progress_bar.set_postfix(val_loss=val_loss / num_batches_processed)
+<<<<<<< HEAD
+                writer.add_scalar("Loss/val", loss, ((e - 1) * len(dev_dl) - 1 + i) * args.val_batch_size)
+=======
+                writer.add_scalar("Loss/val", loss, ((e - 1) * len(dev_dl) + i) * args.val_batch_size)
+>>>>>>> Reads training data from arg directory, generates masks, trains net
 
                 del x_batch
                 del y_batch
+                del y_pred
+                del mask_batch
+                del loss
 
             # Save model if it's the best one yet.
             if val_loss / num_batches_processed < best_val_loss:
@@ -104,15 +141,18 @@ def main():
     device = model_utils.get_device()
     os.makedirs(f'{args.save_path}/{args.experiment}')
 
-    # Load datasets somehow, replace this with real data, put train/val data on `device` for all of training.
-    train_n = 10
-    x_train = torch.rand((train_n, 1, 512, 128))
-    y_train = torch.rand((train_n, 1, 512, 128))
-    val_n = 2
-    x_dev = torch.rand((val_n, 1, 512, 128))
-    y_dev = torch.rand((val_n, 1, 512, 128))
-    train_dl = data.DataLoader(data.TensorDataset(x_train, y_train), batch_size=args.train_batch_size, shuffle=True)
-    dev_dl = data.DataLoader(data.TensorDataset(x_dev, y_dev), batch_size=args.val_batch_size, shuffle=False)
+    # Load dataset from disk
+    x_train, y_train, mask_train, x_dev, y_dev, mask_dev = model_utils.load_data(args.dataset_dir, reload=args.reload_dataset)
+    train_dl = data.DataLoader(
+        data.TensorDataset(x_train, y_train, mask_train),
+        batch_size=args.train_batch_size,
+        shuffle=True,
+    )
+    dev_dl = data.DataLoader(
+        data.TensorDataset(x_dev, y_dev, mask_dev),
+        batch_size=args.val_batch_size,
+        shuffle=False,
+    )
 
     # Initialize a model
     model = models.get_model(args.model)()
@@ -131,12 +171,22 @@ def main():
         weight_decay=args.weight_decay,
     )
 
+    # Scheduler
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer,
+        mode='min',
+        factor=0.5,
+        patience=30,
+        verbose=True,
+    )
+
     # Train!
     trained_model = train_model(
         train_dl,
         dev_dl,
         model,
         optimizer,
+        scheduler,
         args,
     )
 
