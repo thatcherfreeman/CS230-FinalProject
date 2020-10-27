@@ -23,7 +23,7 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--val_batch_size',
         type=int,
-        default=500,
+        default=100,
         help='validation mini-batch size',
     )
     parser.add_argument(
@@ -35,13 +35,13 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--checkpoint_freq',
         type=int,
-        default=10,
+        default=5,
         help='Number of epochs between each checkpoint',
     )
     parser.add_argument(
         '--num_checkpoints',
         type=int,
-        default=5,
+        default=6,
         help='Number of checkpoints to keep'
     )
     parser.add_argument(

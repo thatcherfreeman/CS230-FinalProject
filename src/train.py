@@ -117,7 +117,7 @@ def main():
     add_experiment(args)
     device = model_utils.get_device()
     os.makedirs(f'{args.save_path}/{args.experiment}')
-    print(f'Created new experiment {args.experiment}!')
+    print(f'Created new experiment: {args.experiment}')
 
     # Load dataset from disk
     x_train, y_train, mask_train, x_dev, y_dev, mask_dev = model_utils.load_data(args.dataset_dir, reload=args.reload_dataset)
