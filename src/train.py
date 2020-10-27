@@ -46,16 +46,6 @@ def train_model(
 
                 # Forward pass on model
                 optimizer.zero_grad()
-<<<<<<< HEAD
-                y_pred = model(x_batch, mask_batch)
-                loss = loss_fn(y_pred * x_batch, y_batch)
-
-                # Backward pass and optimization
-                # loss.backward()
-                # optimizer.step()
-                # if not args.skip_scheduler:
-                #     lr_scheduler.step(loss)
-=======
                 y_pred = model(x_batch)
                 loss = loss_fn(y_pred * x_batch, y_batch)
 
@@ -64,7 +54,6 @@ def train_model(
                 optimizer.step()
                 if not args.skip_scheduler:
                     lr_scheduler.step(loss)
->>>>>>> Reads training data from arg directory, generates masks, trains net
 
                 progress_bar.update(len(x_batch))
                 progress_bar.set_postfix(loss=loss.item())
@@ -88,11 +77,7 @@ def train_model(
                 mask_batch = mask_batch.to(device)
 
                 # Forward pass on model
-<<<<<<< HEAD
-                y_pred = model(torch.clamp_min(torch.log(x_batch), 0), mask_batch)
-=======
                 y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
->>>>>>> Reads training data from arg directory, generates masks, trains net
                 y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.5)
                 loss = loss_fn(y_pred_mask * x_batch, y_batch)
 
@@ -101,11 +86,7 @@ def train_model(
 
                 progress_bar.update(len(x_batch))
                 progress_bar.set_postfix(val_loss=val_loss / num_batches_processed)
-<<<<<<< HEAD
-                writer.add_scalar("Loss/val", loss, ((e - 1) * len(dev_dl) - 1 + i) * args.val_batch_size)
-=======
                 writer.add_scalar("Loss/val", loss, ((e - 1) * len(dev_dl) + i) * args.val_batch_size)
->>>>>>> Reads training data from arg directory, generates masks, trains net
 
                 del x_batch
                 del y_batch
