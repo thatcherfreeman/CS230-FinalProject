@@ -106,10 +106,12 @@ class Decoder(nn.Module):
         up_kstride: int = 2,
         ksize: int = 3,
         kstride: int = 1,
+        use_relu: bool = True,
     ):
         super(Decoder, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.use_relu = use_relu
 
         self.upres = nn.ConvTranspose2d(
             in_channels,
@@ -137,7 +139,8 @@ class Decoder(nn.Module):
         assert x_big.shape == x.shape
         x_cat = torch.cat([x_big, x], dim=1)
         out = self.conv1(x_cat)
-        out = self.relu1(out)
+        if self.use_relu:
+            out = self.relu1(out)
         out = self.dropout(out)
         return out
 
@@ -152,10 +155,12 @@ class ResidualDecoder(nn.Module):
         up_kstride: int = 2,
         ksize: int = 3,
         kstride: int = 1,
+        use_relu: bool = True,
     ):
         super(ResidualDecoder, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.use_relu = use_relu
 
         self.upres = nn.ConvTranspose2d(
             in_channels,
@@ -183,7 +188,8 @@ class ResidualDecoder(nn.Module):
         assert x_big.shape == x.shape
         out = self.conv1(x_big)
         out = out + x # Residual connection
-        out = self.relu1(out)
+        if self.use_relu:
+            out = self.relu1(out)
         out = self.dropout(out)
         return out
 
@@ -205,7 +211,7 @@ class UNet(nn.Module):
         self.decoder4 = Decoder(128, 64, drop_p)
         self.decoder3 = Decoder(64, 32, 0)
         self.decoder2 = Decoder(32, 16, 0)
-        self.decoder1 = Decoder(16, 1, 0) # A little questionable, maybe should be conv layer
+        self.decoder1 = Decoder(16, 1, 0, use_relu=False) # A little questionable, maybe should be conv layer
 
         self.sigmoid = nn.Sigmoid()
 
@@ -246,7 +252,7 @@ class ResidualUNet(nn.Module):
         self.decoder4 = ResidualDecoder(128, 64, drop_p)
         self.decoder3 = ResidualDecoder(64, 32, 0)
         self.decoder2 = ResidualDecoder(32, 16, 0)
-        self.decoder1 = ResidualDecoder(16, 1, 0) # A little questionable, maybe should be conv layer
+        self.decoder1 = ResidualDecoder(16, 1, 0, use_relu=False) # A little questionable, maybe should be conv layer
 
         self.sigmoid = nn.Sigmoid()
 
