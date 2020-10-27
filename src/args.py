@@ -29,7 +29,7 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--train_epochs',
         type=int,
-        default=3,
+        default=30,
         help='Number of epochs to train for',
     )
     parser.add_argument(
@@ -81,7 +81,7 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         help='path to directory containing .pkl files',
     )
     parser.add_argument(
-        '--skip_scheduler',
+        '--use_scheduler',
         action='store_true',
         help='Use this flag to avoid learning rate scheduling.',
     )

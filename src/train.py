@@ -39,7 +39,6 @@ def train_model(
             for i, (x_batch, y_batch, mask_batch) in enumerate(train_dl):
                 x_batch = x_batch.abs().to(device)
                 y_batch = y_batch.abs().to(device)
-                mask_batch = mask_batch.to(device)
 
                 x_batch = torch.clamp_min(torch.log(x_batch), 0)
                 y_batch = torch.clamp_min(torch.log(y_batch), 0)
@@ -52,7 +51,7 @@ def train_model(
                 # Backward pass and optimization
                 loss.backward()
                 optimizer.step()
-                if not args.skip_scheduler:
+                if args.use_scheduler:
                     lr_scheduler.step(loss)
 
                 progress_bar.update(len(x_batch))
@@ -63,7 +62,6 @@ def train_model(
                 del y_batch
                 del y_pred
                 del loss
-                del mask_batch
 
         torch.cuda.empty_cache()
         # Validation portion
@@ -74,7 +72,6 @@ def train_model(
             for i, (x_batch, y_batch, mask_batch) in enumerate(dev_dl):
                 x_batch = x_batch.abs().to(device)
                 y_batch = y_batch.abs().to(device)
-                mask_batch = mask_batch.to(device)
 
                 # Forward pass on model
                 y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
@@ -91,7 +88,6 @@ def train_model(
                 del x_batch
                 del y_batch
                 del y_pred
-                del mask_batch
                 del loss
 
             # Save model if it's the best one yet.
@@ -121,6 +117,7 @@ def main():
     add_experiment(args)
     device = model_utils.get_device()
     os.makedirs(f'{args.save_path}/{args.experiment}')
+    print(f'Created new experiment {args.experiment}!')
 
     # Load dataset from disk
     x_train, y_train, mask_train, x_dev, y_dev, mask_dev = model_utils.load_data(args.dataset_dir, reload=args.reload_dataset)
