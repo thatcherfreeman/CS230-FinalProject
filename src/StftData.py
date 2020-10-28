@@ -52,12 +52,16 @@ class StftData:
 
     """Saves the scipy-generated frequency spectrogram of the data to a file."""
     def save_spectrogram(self, filepath: Optional[str]=None, show: bool = False):
-        magnitude = np.clip(np.log(np.abs(self.data).astype(np.float32)), 0, 10)
-        magnitude = np.log(np.abs(self.data).astype(np.float32)) + 8
+        if str(self.data.dtype) == 'float32':
+            # assume mask
+            magnitude = np.abs(self.data).astype(np.float32)
+        else:
+            magnitude = np.clip(np.log(np.abs(self.data).astype(np.float32)), 0, 10)
+
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         plt.imshow(magnitude, aspect='auto', cmap='viridis')
-        plt.colorbar()
+        # plt.colorbar()
         plt.gca().invert_yaxis() # put high freq on top
 
         # Lie about axis limits lol
