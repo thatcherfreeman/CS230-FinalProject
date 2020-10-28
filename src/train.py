@@ -31,17 +31,17 @@ def train_model(
 
     for e in range(1, args.train_epochs + 1):
         print(f'Training epoch {e}...')
-        torch.cuda.empty_cache()
 
         # Training portion
+        torch.cuda.empty_cache()
         with tqdm(total=args.train_batch_size * len(train_dl)) as progress_bar:
             model.train()
             for i, (x_batch, y_batch, mask_batch) in enumerate(train_dl):
                 x_batch = x_batch.abs().to(device)
                 y_batch = y_batch.abs().to(device)
 
-                x_batch = torch.clamp_min(torch.log(x_batch), 0)
-                y_batch = torch.clamp_min(torch.log(y_batch), 0)
+                # x_batch = torch.clamp_min(torch.log(x_batch), 0)
+                # y_batch = torch.clamp_min(torch.log(y_batch), 0)
 
                 # Forward pass on model
                 optimizer.zero_grad()
@@ -63,8 +63,8 @@ def train_model(
                 del y_pred
                 del loss
 
-        torch.cuda.empty_cache()
         # Validation portion
+        torch.cuda.empty_cache()
         with tqdm(total=args.val_batch_size * len(dev_dl)) as progress_bar:
             model.eval()
             val_loss = 0.0
@@ -74,8 +74,12 @@ def train_model(
                 y_batch = y_batch.abs().to(device)
 
                 # Forward pass on model
-                y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
-                y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.5)
+                # y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
+                # y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.85)
+                # loss = loss_fn(y_pred_mask * x_batch, y_batch)
+
+                y_pred = model(x_batch)
+                y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.85)
                 loss = loss_fn(y_pred_mask * x_batch, y_batch)
 
                 val_loss += loss.item()
