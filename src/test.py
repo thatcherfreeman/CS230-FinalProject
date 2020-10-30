@@ -32,14 +32,11 @@ def test_model(
     # Validation portion
 
 
-    num_batches_processed = 0
-    samples_processed = 0
     ground_truths = []
     model_outputs = []
 
     # Forward inference on model
     predicted_masks = []
-
     print('\n  Running forward inference...')
     with tqdm(total=args.batch_size * len(dev_dl)) as progress_bar:
         for i, (x_batch, y_batch, ground_truth) in enumerate(dev_dl):
@@ -61,6 +58,7 @@ def test_model(
 
 
     print('\n  Processing results...')
+    SDR, ISR, SIR, SAR = [], [], [], []
     with tqdm(total=args.batch_size * len(dev_dl)) as progress_bar:
         for i, ((x_batch, _, ground_truth), y_pred_mask) in enumerate(zip(dev_dl, predicted_masks)):
             stft_audio = y_pred_mask * x_batch
@@ -72,19 +70,23 @@ def test_model(
             ground_truths.append(ground_truth.numpy())
             model_outputs.append(model_audio)
 
+            batch_sdr, batch_isr, batch_sir, batch_sar = bsseval.evaluate(
+                ground_truth,
+                model_audio,
+                win=stft_container.fs,
+                hop=stft_container.fs,
+            )
+
+            SDR = np.concatenate([SDR, np.mean(batch_sdr, axis=1)], axis=0)
+            ISR = np.concatenate([ISR, np.mean(batch_isr, axis=1)], axis=0)
+            SIR = np.concatenate([SIR, np.mean(batch_sir, axis=1)], axis=0)
+            SAR = np.concatenate([SAR, np.mean(batch_sar, axis=1)], axis=0)
+
             progress_bar.update(len(x_batch))
 
     print(f'\n  Calculating overall metrics...')
-    model_outputs = np.concatenate(model_outputs, axis=0)
-    ground_truths = np.concatenate(ground_truths, axis=0)
-
-    bsseval.MAX_SOURCES = len(ground_truths)
-    SDR, ISR, SIR, SAR = bsseval.evaluate(
-        ground_truths,
-        model_outputs,
-        win=stft_container.fs,
-        hop=stft_container.fs,
-    )
+    # model_outputs = np.concatenate(model_outputs, axis=0)
+    # ground_truths = np.concatenate(ground_truths, axis=0)
 
     print()
     print('*' * 30)
@@ -111,7 +113,7 @@ def main():
     device = model_utils.get_device()
 
     # Load dataset from disk
-    x_dev, y_dev, ground_truths, container = model_utils.load_test_data(args.dataset_dir, dev_frac=0.1)
+    x_dev, y_dev, ground_truths, container = model_utils.load_test_data(args.dataset_dir, dev_frac=0.99)
     dev_dl = data.DataLoader(
         data.TensorDataset(x_dev, y_dev, ground_truths),
         batch_size=args.batch_size,
