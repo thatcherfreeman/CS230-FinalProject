@@ -74,10 +74,11 @@ def test_model(
 
             progress_bar.update(len(x_batch))
 
-
     print(f'\n  Calculating overall metrics...')
     model_outputs = np.concatenate(model_outputs, axis=0)
     ground_truths = np.concatenate(ground_truths, axis=0)
+
+    bsseval.MAX_SOURCES = len(ground_truths)
     SDR, ISR, SIR, SAR = bsseval.evaluate(
         ground_truths,
         model_outputs,

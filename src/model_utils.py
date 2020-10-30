@@ -122,7 +122,7 @@ def load_test_data(
     combined_ls, biden_ls, target_ls = [], [], []
     for i, (cd, bd, td) in enumerate(zipped_filenames):
         if i % 500 == 0:
-            print(f'  Reading example {i} / {num_examples}...')
+            print(f'  Reading example {i} / {len(zipped_filenames)}...')
         # Preprocess data
         combined_data = StftData(pickle_file=f'{directory_path}/{cd}')
         biden_data = StftData(pickle_file=f'{directory_path}/{bd}')
