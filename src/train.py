@@ -124,7 +124,7 @@ def main():
     print(f'Created new experiment: {args.experiment}')
 
     # Load dataset from disk
-    x_train, y_train, mask_train, x_dev, y_dev, mask_dev = model_utils.load_data(args.dataset_dir, reload=args.reload_dataset)
+    x_train, y_train, mask_train, x_dev, y_dev, mask_dev = model_utils.load_data(args.dataset_dir)
     train_dl = data.DataLoader(
         data.TensorDataset(x_train, y_train, mask_train),
         batch_size=args.train_batch_size,

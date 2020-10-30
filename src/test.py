@@ -1,65 +1,144 @@
-import model_utils as model_utils
-import models as models
-import torch
+import argparse
+import os
 
-
-from StftData import StftData
-
-from AudioDataUtils import *
+import bsseval
 import numpy as np
+import torch
+from torch import nn
+from torch import optim
+from torch.utils import data
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm # type: ignore
+
+from args import add_test_args
+import models
+import model_utils
+from StftData import StftData
+from AudioDataUtils import AudioData, play
 
 
-MODEL_DIR = "checkpoints/UNet_exp28/UNet_best_val.checkpoint"
+def test_model(
+    dev_dl: data.DataLoader,
+    model: nn.Module,
+    args: argparse.Namespace,
+    stft_container: StftData,
+) -> nn.Module:
 
-combined = StftData(pickle_file = 'example_data/combined_1001.pkl')
-biden = StftData(pickle_file='example_data/biden_1001.pkl')
-trump = StftData(pickle_file='example_data/trump_1001.pkl')
+    device = model_utils.get_device()
+    loss_fn = model_utils.l1_norm_loss
 
-container = StftData(pickle_file='example_data/combined_1001.pkl')
+    print('Running test metrics...')
 
-combined_np = combined.data
-biden_np = biden.data
-trump_np = trump.data
-ideal_mask = np.ones_like(biden_np, dtype=np.float32) * (np.abs(biden_np) > np.abs(trump_np))
-
-
-
-
-# # Play combined audio
-# print("Playing combined audio")
-# play(combined.invert())
-
-# # First play the best case scenario mask.
-# container.data = ideal_mask * combined_np
-# print("playing best expected cleanup")
-# play(container.invert())
+    # Validation portion
 
 
-# Model output:
-print("Playing model output")
-model = model_utils.load_model(models.get_model("UNet")(), MODEL_DIR).cpu()
-model.eval()
+    num_batches_processed = 0
+    samples_processed = 0
+    ground_truths = []
+    model_outputs = []
 
-# alpha = 0.85 # Higher removes more trump.
-# x_input = torch.tensor(combined_np, requires_grad=False).cpu()
-# x_input = torch.clamp_min(torch.log(x_input.abs()), 0)
-# x_input = torch.reshape(x_input, (1, 1, 512, 128))
-# pred = model(x_input).detach().numpy()
-# pred_mask = np.ones_like(pred) * (pred > alpha)
-# # pred_mask = pred
-# # Could also consider multiplying in log space and then taking exp to get the result back
-# container.data = pred_mask * combined_np
-# play(container.invert())
+    # Forward inference on model
+    predicted_masks = []
+
+    print('\n  Running forward inference...')
+    with tqdm(total=args.batch_size * len(dev_dl)) as progress_bar:
+        for i, (x_batch, y_batch, ground_truth) in enumerate(dev_dl):
+            x_batch = x_batch.abs().to(device)
+            y_batch = y_batch.abs().to(device)
+
+            # Forward pass on model
+            # y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
+
+            y_pred = model(x_batch)
+            y_pred_mask = torch.ones_like(y_pred) * (y_pred > args.alpha)
+            predicted_masks.append(y_pred_mask.cpu())
+
+            progress_bar.update(len(x_batch))
+
+            del x_batch
+            del y_batch
+            del y_pred
 
 
-alpha = 0.75 # Higher removes more trump.
-x_input = torch.tensor(combined_np, requires_grad=False).cpu().abs()
-# x_input = torch.clamp_min(torch.log(x_input.abs()), 0)
-x_input = torch.reshape(x_input, (1, 1, 512, 128))
-pred = model(x_input).detach().numpy()
-pred_mask = np.ones_like(pred) * (pred > alpha)
-# pred_mask = pred
-container.data = pred_mask * combined_np
-play(container.invert())
+    print('\n  Processing results...')
+    with tqdm(total=args.batch_size * len(dev_dl)) as progress_bar:
+        for i, ((x_batch, _, ground_truth), y_pred_mask) in enumerate(zip(dev_dl, predicted_masks)):
+            stft_audio = y_pred_mask * x_batch
+
+            # Calculate other stats
+            model_stft = stft_audio.cpu().numpy()
+            stft_container.data = stft_audio.numpy()
+            model_audio = model_utils.invert_batch_like(model_stft, stft_container)
+            ground_truths.append(ground_truth.numpy())
+            model_outputs.append(model_audio)
+
+            progress_bar.update(len(x_batch))
+
+
+    print(f'\n  Calculating overall metrics...')
+    model_outputs = np.concatenate(model_outputs, axis=0)
+    ground_truths = np.concatenate(ground_truths, axis=0)
+    SDR, ISR, SIR, SAR = bsseval.evaluate(
+        ground_truths,
+        model_outputs,
+        win=stft_container.fs,
+        hop=stft_container.fs,
+    )
+
+    print()
+    print('*' * 30)
+    print(f'SDR: {np.mean(SDR)}')
+    print(f'ISR: {np.mean(ISR)}')
+    print(f'SIR: {np.mean(SIR)}')
+    print(f'SAR: {np.mean(SAR)}')
+    print('*' * 30)
+
+    # for i in range(ground_truths.shape[0]):
+    #     audio = AudioData(manual_init=[stft_container.fs, ground_truths[i, :, 0]])
+    #     audio2 = AudioData(manual_init=[stft_container.fs, model_outputs[i, :, 0]])
+    #     play(audio)
+    #     play(audio2)
+
+    return model
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    add_test_args(parser)
+    args = parser.parse_args()
+
+    device = model_utils.get_device()
+
+    # Load dataset from disk
+    x_dev, y_dev, ground_truths, container = model_utils.load_test_data(args.dataset_dir, dev_frac=0.1)
+    dev_dl = data.DataLoader(
+        data.TensorDataset(x_dev, y_dev, ground_truths),
+        batch_size=args.batch_size,
+        shuffle=False,
+    )
+
+    # Initialize a model
+    model = models.get_model(args.model)()
+
+    # load from checkpoint if path specified
+    assert args.load_path is not None
+    model = model_utils.load_model(model, args.load_path)
+    model.eval()
+
+    # Move model to GPU if necessary
+    model.to(device)
+
+    # test!
+    test_model(
+        dev_dl,
+        model,
+        args,
+        container,
+    )
+
+
+if __name__ == '__main__':
+    model_utils.verify_versions()
+    main()
 
 

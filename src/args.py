@@ -59,7 +59,6 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--load_path',
         type=str,
-        default=None,
         help='specify path to load the model at the given path before training.'
     )
     parser.add_argument(
@@ -85,8 +84,35 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         action='store_true',
         help='Use this flag to avoid learning rate scheduling.',
     )
+
+def add_test_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        '--reload_dataset',
-        action='store_true',
-        help='use this flag to reload/recompute the training datset.'
+        '--batch_size',
+        type=int,
+        default=100,
+        help='mini-batch size',
+    )
+    parser.add_argument(
+        '--load_path',
+        type=str,
+        default=None,
+        help='specify path to load the model at the given path before training.'
+    )
+    parser.add_argument(
+        '--model',
+        type=str,
+        default='UNet',
+        help='choose the model to train',
+    )
+    parser.add_argument(
+        '--dataset_dir',
+        type=str,
+        default='/home/ubuntu/data/training_data1',
+        help='path to directory containing .pkl files',
+    )
+    parser.add_argument(
+        '--alpha',
+        type=float,
+        default = 0.75,
+        help='Mask threshold (between 0 and 1)'
     )
