@@ -33,7 +33,6 @@ def get_device() -> torch.device:
 
 def load_data(
     directory_path: str,
-    pickle_filename: str = 'datset.pkl',
     dev_frac: float = 0.1,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     '''
@@ -92,7 +91,6 @@ def load_data(
 
 def load_test_data(
     directory_path: str,
-    pickle_filename: str = 'datset.pkl',
     dev_frac: float = 0.1,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, StftData]:
     '''
