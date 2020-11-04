@@ -1,5 +1,5 @@
 import pickle
-from typing import Optional, Any
+from typing import Optional, Any, Tuple
 import numpy as np # type: ignore
 from scipy import signal # type: ignore
 from AudioDataUtils import AudioData
@@ -26,11 +26,13 @@ class StftData:
     sample_freqs: np.ndarray
     segment_times: np.ndarray
     data: np.ndarray  # In the scipy docs, this field is referred to as 'Zxx'.
-    fs: float
+    fs: float  # Sampling frequency of the audio in the time domain
     args: StftArgs
 
     def __init__(self, args: Optional[StftArgs] = None, audiodata: Optional[AudioData] = None,
-                 pickle_file: Optional[str] = None):
+                 pickle_file: Optional[str] = None,
+                 # The arguments to 'manual_init' are in the following order: data, sample_freqs, segment_times, fs
+                 manual_init: Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, float]] = None):
         if audiodata is not None:
             self.args = args # type: ignore
             if self.args is None:
@@ -41,8 +43,17 @@ class StftData:
                             nperseg=self.args.nperseg, noverlap=self.args.noverlap)
         elif pickle_file is not None:
             self.load(pickle_file)
+        elif manual_init is not None:
+            self.args = args
+            if self.args is None:
+                raise ValueError("Some manual_init data has been provided, so you almost certainly want to pass StftArgs as well.")
+            self.data = manual_init[0]
+            self.sample_freqs = manual_init[1]
+            self.segment_times = manual_init[2]
+            self.fs = manual_init[3]
         else:
-            raise ValueError("You must provide either a pickle file or some STFT args and audio data.")
+            raise ValueError("You must provide either a pickle file, some STFT args and audio data, "
+                             "or a manual_init tuple of the form (data, sample_freqs, segment_times, fs).")
 
     """Transforms the frequency data back into the time domain"""
     def invert(self) -> AudioData:
