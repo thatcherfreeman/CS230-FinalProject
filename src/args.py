@@ -103,6 +103,19 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
         help='specify path to load the model at the given path before training.'
     )
 
+def add_wav_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        '--input_file',
+        type=str,
+        default=None,
+        help='input wav file to process',
+    )
+    parser.add_argument(
+        '--output_file',
+        type=str,
+        default='out.wav',
+        help='Location to write output processed wav file.'
+    )
 
 def add_test_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
