@@ -69,7 +69,7 @@ def apply_model(input: np.ndarray, model: nn.Module, example_stft: StftData, alp
     device = model_utils.get_device()
     input_tensor = torch.tensor(input, dtype=torch.complex64)
     input_mags = input_tensor.abs().to(device)
-    predictions = model(input_mags)
+    predictions, _ = model(input_mags)
     predicted_mask = torch.ones_like(predictions) * (predictions > alpha)
     output_freqs = input_tensor * predicted_mask
 

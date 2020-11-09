@@ -6,8 +6,10 @@ import pickle
 import numpy as np # type: ignore
 import torch
 from torch import nn
+from tqdm import tqdm # type: ignore
 
 from StftData import StftData
+import models
 
 
 def save_model(model: nn.Module, path: str) -> nn.Module:
@@ -56,35 +58,38 @@ def load_data(
 
     # Read files as stft data
     num_examples = len(zipped_filenames)
-    combined_ls, biden_ls = [], []
+    combined_ls, biden_ls, trump_ls = [], [], []
     masks_ls = []
-    for i, (cd, bd, td) in enumerate(zipped_filenames):
-        if i % 2000 == 0:
-            print(f'  Reading example {i} / {num_examples}...')
-        combined_data = StftData(pickle_file=f'{directory_path}/{cd}')
-        biden_data = StftData(pickle_file=f'{directory_path}/{bd}')
-        trump_data = StftData(pickle_file=f'{directory_path}/{td}')
-        combined_ls.append(combined_data.data)
-        biden_ls.append(biden_data.data)
-        biden_mag = np.abs(biden_data.data)
-        trump_mag = np.abs(trump_data.data)
-        masks_ls.append(np.ones_like(biden_mag, dtype=np.float32) * (biden_mag > trump_mag))
-
+    with tqdm(total=len(zipped_filenames)) as progress_bar:
+        for i, (cd, bd, td) in enumerate(zipped_filenames):
+            combined_data = StftData(pickle_file=f'{directory_path}/{cd}')
+            biden_data = StftData(pickle_file=f'{directory_path}/{bd}')
+            trump_data = StftData(pickle_file=f'{directory_path}/{td}')
+            combined_ls.append(combined_data.data)
+            biden_ls.append(biden_data.data)
+            trump_ls.append(trump_data.data)
+            biden_mag = np.abs(biden_data.data)
+            trump_mag = np.abs(trump_data.data)
+            masks_ls.append(np.ones_like(biden_mag, dtype=np.float32) * (biden_mag > trump_mag))
+            progress_bar.update()
 
     # Reformat arrays
     combined = _convert_to_tensor(combined_ls, torch.complex64)
     biden = _convert_to_tensor(biden_ls, torch.complex64)
+    trump = _convert_to_tensor(trump_ls, torch.complex64)
     masks = _convert_to_tensor(masks_ls, torch.float32)
 
     # Partition into train and dev
     print('  Done!')
-    dev_idx = num_examples - int(num_examples * dev_frac + 1)
+    dev_idx = num_examples - int(num_examples * dev_frac)
     return (
         combined[:dev_idx],
         biden[:dev_idx],
+        trump[:dev_idx],
         masks[:dev_idx],
         combined[dev_idx:],
         biden[dev_idx:],
+        trump[dev_idx:],
         masks[dev_idx:],
     )
 
@@ -114,47 +119,57 @@ def load_test_data(
 
     # Only load dev examples
     num_examples = len(zipped_filenames)
-    dev_idx = num_examples - int(num_examples * dev_frac + 1)
+    dev_idx = num_examples - int(num_examples * dev_frac)
     zipped_filenames = zipped_filenames[dev_idx:]
 
-
     # Need combined as STFT data (for network input) and inverted biden
-    combined_ls, biden_ls, target_ls = [], [], []
-    for i, (cd, bd, td) in enumerate(zipped_filenames):
-        if i % 500 == 0:
-            print(f'  Reading example {i} / {len(zipped_filenames)}...')
-        # Preprocess data
-        combined_data = StftData(pickle_file=f'{directory_path}/{cd}')
-        biden_data = StftData(pickle_file=f'{directory_path}/{bd}')
-        combined_ls.append(combined_data.data)
-        biden_ls.append(biden_data.data)
-        target_ls.append(biden_data.invert().time_amplitudes)
-
+    combined_ls, biden_samples_ls, trump_samples_ls, biden_ls = [], [], [], []
+    with tqdm(total=len(zipped_filenames)) as progress_bar:
+        for i, (cd, bd, td) in enumerate(zipped_filenames):
+            # Preprocess data
+            combined_data = StftData(pickle_file=f'{directory_path}/{cd}')
+            biden_data = StftData(pickle_file=f'{directory_path}/{bd}')
+            trump_data = StftData(pickle_file=f'{directory_path}/{td}')
+            combined_ls.append(combined_data.data)
+            biden_ls.append(biden_data.data)
+            biden_samples_ls.append(biden_data.invert().time_amplitudes)
+            trump_samples_ls.append(trump_data.invert().time_amplitudes)
+            progress_bar.update()
 
     # Reformat arrays
     combined = _convert_to_tensor(combined_ls, torch.complex64)
     biden = _convert_to_tensor(biden_ls, torch.complex64)
-    targets = torch.tensor(np.expand_dims(np.asarray(target_ls), axis=2), dtype=torch.float32)
+    biden_samples = np.expand_dims(np.asarray(biden_samples_ls), axis=2)
+    trump_samples = np.expand_dims(np.asarray(trump_samples_ls), axis=2)
+    gt_samples = torch.tensor(np.stack([biden_samples, trump_samples], axis=1)) # Shape 2, time_samples, 1
 
     print('  Done!')
 
     return (
         combined,
         biden,
-        targets,
+        gt_samples,
         biden_data,
     )
 
 def invert_batch_like(batch: np.ndarray, container: StftData) -> np.ndarray:
-    # Assume batch is shape (m, 1, H, W)
-    m = batch.shape[0]
-    batch_small = np.squeeze(batch, axis=1)
+    '''
+    Takes in batch of shape (m, nsrc, 1, H, W), returns ndarray of shape (m * nsrc, time_samples, 1),
+    containing the inverse STFT of the H,W images in batch.
+    '''
+    # Assume batch is shape (m, nsrc, 1, H, W)
+    m, nsrc, _, _, _= batch.shape
+    batch_small = np.squeeze(batch, axis=2)
     output = []
     for i in range(m):
-        container.data = batch[i, :, :]
-        audio = container.invert()
-        output.append(audio.time_amplitudes)
-    output = np.expand_dims(np.concatenate(output, axis=0),2) # (m, time_samples, 1)
+        for j in range(nsrc):
+            container.data = batch[i, j, :, :]
+            audio = container.invert()
+            output.append(audio.time_amplitudes)
+    output = np.array(output)
+    time_samples = output.shape[2]
+    output = np.reshape(output, (m * nsrc, time_samples, 1))
+    # output = np.expand_dims(np.concatenate(output, axis=0),3) # (m, nsrc, time_samples, 1)
     return output
 
 
@@ -167,9 +182,22 @@ def _convert_to_tensor(x: List[np.ndarray], dtype: torch.dtype) -> torch.Tensor:
     out = np.expand_dims(out, axis=1)
     return torch.tensor(out, dtype=dtype)
 
-def l1_norm_loss(input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-    return torch.mean(torch.abs(input - target))
+def l1_norm_loss(input: torch.Tensor, pos_target: torch.Tensor) -> torch.Tensor:
+    return torch.mean(torch.abs(input - pos_target))
+
+def l1_norm_triplet_loss(input: torch.Tensor, pos_target: torch.Tensor, neg_target: torch.Tensor) -> torch.Tensor:
+    return torch.mean(torch.abs(input - pos_target) - torch.abs(input - neg_target)) + 1
 
 def verify_versions() -> None:
     # Version 1.5.0 has a bug where certain type annotations don't pass typecheck
     assert torch.__version__ == '1.6.0', 'Incorrect torch version installed!'
+
+def combine_unets(f1: str, f2: str, fout: str) -> models.DoubleUNet:
+    net1 = models.UNet()
+    net2 = models.UNet()
+    net1 = load_model(net1, f1)
+    net2 = load_model(net2, f2)
+    dnet = models.DoubleUNet()
+    dnet.net_b = net1
+    dnet.net_t = net2
+    save_model(dnet, fout)

@@ -8,7 +8,7 @@ from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm # type: ignore
 
-from args import add_train_args, add_experiment
+from args import add_train_args, add_experiment, add_common_args, save_arguments
 import models
 import model_utils
 
@@ -25,6 +25,7 @@ def train_model(
     device = model_utils.get_device()
     # loss_fn = nn.functional.binary_cross_entropy
     loss_fn = model_utils.l1_norm_loss
+    val_loss_fn = model_utils.l1_norm_loss
     best_val_loss = torch.tensor(float('inf'))
     saved_checkpoints = []
     writer = SummaryWriter(log_dir=f'{args.log_dir}/{args.experiment}')
@@ -36,17 +37,19 @@ def train_model(
         torch.cuda.empty_cache()
         with tqdm(total=args.train_batch_size * len(train_dl)) as progress_bar:
             model.train()
-            for i, (x_batch, y_batch, mask_batch) in enumerate(train_dl):
+            for i, (x_batch, y_batch_biden, y_batch_trump, _) in enumerate(train_dl):
                 x_batch = x_batch.abs().to(device)
-                y_batch = y_batch.abs().to(device)
+                y_batch_biden = y_batch_biden.abs().to(device)
+                y_batch_trump = y_batch_trump.abs().to(device)
 
                 # x_batch = torch.clamp_min(torch.log(x_batch), 0)
                 # y_batch = torch.clamp_min(torch.log(y_batch), 0)
 
                 # Forward pass on model
                 optimizer.zero_grad()
-                y_pred = model(x_batch)
-                loss = loss_fn(y_pred * x_batch, y_batch)
+                y_pred_b, y_pred_t = model(x_batch)
+                loss = loss_fn(y_pred_b * x_batch, y_batch_biden)
+                # loss += loss_fn(y_pred_t * x_batch, y_batch_trump)
 
                 # Backward pass and optimization
                 loss.backward()
@@ -59,8 +62,10 @@ def train_model(
                 writer.add_scalar("Loss/train", loss, ((e - 1) * len(train_dl) + i) * args.train_batch_size)
 
                 del x_batch
-                del y_batch
-                del y_pred
+                del y_batch_biden
+                del y_batch_trump
+                del y_pred_b
+                del y_pred_t
                 del loss
 
         # Validation portion
@@ -69,18 +74,19 @@ def train_model(
             model.eval()
             val_loss = 0.0
             num_batches_processed = 0
-            for i, (x_batch, y_batch, mask_batch) in enumerate(dev_dl):
+            for i, (x_batch, y_batch_biden, y_batch_trump, _) in enumerate(dev_dl):
                 x_batch = x_batch.abs().to(device)
-                y_batch = y_batch.abs().to(device)
+                y_batch_biden = y_batch_biden.abs().to(device)
+                y_batch_trump = y_batch_trump.abs().to(device)
 
                 # Forward pass on model
                 # y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
                 # y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.85)
                 # loss = loss_fn(y_pred_mask * x_batch, y_batch)
 
-                y_pred = model(x_batch)
-                y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.85)
-                loss = loss_fn(y_pred_mask * x_batch, y_batch)
+                y_pred, _ = model(x_batch)
+                y_pred_mask = torch.ones_like(y_pred) * (y_pred > args.alpha)
+                loss = val_loss_fn(y_pred_mask * x_batch, y_batch_biden)
 
                 val_loss += loss.item()
                 num_batches_processed += 1
@@ -90,7 +96,8 @@ def train_model(
                 writer.add_scalar("Loss/val", loss, ((e - 1) * len(dev_dl) + i) * args.val_batch_size)
 
                 del x_batch
-                del y_batch
+                del y_batch_biden
+                del y_batch_trump
                 del y_pred
                 del loss
 
@@ -117,21 +124,20 @@ def train_model(
 def main():
     parser = argparse.ArgumentParser()
     add_train_args(parser)
+    add_common_args(parser)
     args = parser.parse_args()
     add_experiment(args)
     device = model_utils.get_device()
-    os.makedirs(f'{args.save_path}/{args.experiment}')
-    print(f'Created new experiment: {args.experiment}')
 
     # Load dataset from disk
-    x_train, y_train, mask_train, x_dev, y_dev, mask_dev = model_utils.load_data(args.dataset_dir)
+    x_train, y_train_biden, y_train_trump, mask_train, x_dev, y_dev_biden, y_dev_trump, mask_dev = model_utils.load_data(args.dataset_dir)
     train_dl = data.DataLoader(
-        data.TensorDataset(x_train, y_train, mask_train),
+        data.TensorDataset(x_train, y_train_biden, y_train_trump, mask_train),
         batch_size=args.train_batch_size,
         shuffle=True,
     )
     dev_dl = data.DataLoader(
-        data.TensorDataset(x_dev, y_dev, mask_dev),
+        data.TensorDataset(x_dev, y_dev_biden, y_dev_trump, mask_dev),
         batch_size=args.val_batch_size,
         shuffle=False,
     )
@@ -161,6 +167,10 @@ def main():
         patience=30,
         verbose=True,
     )
+
+    os.makedirs(f'{args.save_path}/{args.experiment}')
+    print(f'Created new experiment: {args.experiment}')
+    save_arguments(args, f'{args.save_path}/{args.experiment}/args.txt')
 
     # Train!
     trained_model = train_model(

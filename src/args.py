@@ -1,11 +1,19 @@
 import argparse
 import os
+import json
+
 
 def add_experiment(args: argparse.Namespace) -> None:
     if args.save_path not in os.listdir('.'):
         os.makedirs(args.save_path)
     num_folders = len(os.listdir(args.save_path))
     args.experiment = f'{args.model}_exp{num_folders}'
+
+
+def save_arguments(args: argparse.Namespace, filename: str) -> None:
+    with open(filename, 'w') as f:
+        json.dump(args.__dict__, f)
+
 
 def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
@@ -57,15 +65,24 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         help='specify path to save the trained model'
     )
     parser.add_argument(
-        '--load_path',
-        type=str,
-        help='specify path to load the model at the given path before training.'
-    )
-    parser.add_argument(
         '--log_dir',
         type=str,
         default='logs',
         help='Directory to store tensorboard logs',
+    )
+    parser.add_argument(
+        '--use_scheduler',
+        action='store_true',
+        help='Use this flag to avoid learning rate scheduling.',
+    )
+
+
+def add_common_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        '--alpha',
+        type=float,
+        default = 0.85,
+        help='Mask threshold (between 0 and 1)',
     )
     parser.add_argument(
         '--model',
@@ -80,10 +97,12 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         help='path to directory containing .pkl files',
     )
     parser.add_argument(
-        '--use_scheduler',
-        action='store_true',
-        help='Use this flag to avoid learning rate scheduling.',
+        '--load_path',
+        type=str,
+        default=None,
+        help='specify path to load the model at the given path before training.'
     )
+
 
 def add_test_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
@@ -93,26 +112,12 @@ def add_test_args(parser: argparse.ArgumentParser) -> None:
         help='mini-batch size',
     )
     parser.add_argument(
-        '--load_path',
-        type=str,
-        default=None,
-        help='specify path to load the model at the given path before training.'
+        '--biden_only_sdr',
+        action='store_true',
+        help='Calculate SDR using only the biden track.',
     )
     parser.add_argument(
-        '--model',
-        type=str,
-        default='UNet',
-        help='choose the model to train',
-    )
-    parser.add_argument(
-        '--dataset_dir',
-        type=str,
-        default='/home/ubuntu/data/training_data1',
-        help='path to directory containing .pkl files',
-    )
-    parser.add_argument(
-        '--alpha',
-        type=float,
-        default = 0.75,
-        help='Mask threshold (between 0 and 1)'
+        '--nonboolean_mask',
+        action='store_true',
+        help='Just use mask directly out of model instead of casting to 0 or 1',
     )
