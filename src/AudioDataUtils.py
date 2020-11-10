@@ -86,27 +86,40 @@ def assert_wav_file(wav_filepath: str):
                   " audio channels, all but the first will be suppressed to simplify our model.", file=sys.stderr)
 
 
-def superimpose(audio_1: AudioData, audio_2: AudioData) -> AudioData:
+"""Returns a 3-tuple of AudioData objects: the combined audio, rescaled audio1, and rescaled audio2"""
+def superimpose(audio_1: AudioData, audio_2: AudioData) -> Tuple[AudioData, AudioData, AudioData]:
     if audio_1.sampling_freq != audio_2.sampling_freq:
         # It is technically possible to upsample/downsample audio, but that can introduce losses that complicate our efforts.
         # For now, let's see if we can get all of our audio sources at a standard sampling frequency.
         raise ValueError("Superimposing 2 AudioData sources with different sampling frequencies is unsupported.")
     long_data = audio_1
     short_data = audio_2
+    swapped = False
     if len(audio_1.time_amplitudes) < len(audio_2.time_amplitudes):
         long_data = audio_2
         short_data = audio_1
+        swapped = True
 
     # For now, we'll overlay the shorter piece at the beginning of the longer one. This shouldn't be too hard to change later if need be.
     # First, we normalize the vectors by their peak-to-peak distances (max point - min point)
     long_data_p2p = np.max(long_data.time_amplitudes) - np.min(long_data.time_amplitudes)
     short_data_p2p = np.max(short_data.time_amplitudes) - np.min(short_data.time_amplitudes)
-    new_data = copy.deepcopy(long_data.time_amplitudes) / long_data_p2p
-    new_data[0:short_data.time_amplitudes.shape[0]] += short_data.time_amplitudes/short_data_p2p
+
+    long_data_normalized = copy.deepcopy(long_data.time_amplitudes) / long_data_p2p
+    short_data_normalized = copy.deepcopy(short_data.time_amplitudes)/short_data_p2p
+
+    new_data = long_data_normalized
+    new_data[0:short_data.time_amplitudes.shape[0]] += short_data_normalized
     # scale back up by the average of the peak-to-peak distances in the audio sources
     # Note: This may not work very well if one of the samples is really quiet
-    new_data *= (long_data_p2p + short_data_p2p)/2
-    return AudioData(manual_init=(long_data.sampling_freq, new_data))
+    rescaling_factor = (long_data_p2p + short_data_p2p)/2
+    new_data *= rescaling_factor
+    combined = AudioData(manual_init=(long_data.sampling_freq, new_data))
+    output1 = AudioData(manual_init=(long_data.sampling_freq, long_data_normalized*rescaling_factor))
+    output2 = AudioData(manual_init=(long_data.sampling_freq, short_data_normalized*rescaling_factor))
+    if swapped:
+        output1, output2 = output2, output1
+    return combined, output1, output2
 
 
 # returns a *separate* downsampled instance, leaving the parameter audiodata unchanged

@@ -87,7 +87,7 @@ def create_data_for_model(target_dir: str, source1_dir: str, source2_dir: str,
         if example_num%100 == 0:
             print("Processing example #{}".format(example_num))
         audio1, audio2 = pairgen.get_pair()
-        superimposed = AudioDataUtils.superimpose(audio1, audio2)
+        superimposed, audio1, audio2 = AudioDataUtils.superimpose(audio1, audio2)
 
         freqdata1 = trim_stft_data(StftData(args=args, audiodata=audio1))
         freqdata2 = trim_stft_data(StftData(args=args, audiodata=audio2))
