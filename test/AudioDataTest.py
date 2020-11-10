@@ -23,7 +23,7 @@ class AudioDataTestCase(unittest.TestCase):
     def test_superimpose_audio_data(self):
         simple: AudioData = AudioData(wav_filepath=PATH_TO_SIMPLE_WAV)
         allstar: AudioData = AudioData(wav_filepath=PATH_TO_ALLSTAR_WAV)
-        superimposed: AudioData = superimpose(simple, allstar)
+        superimposed, _, _ = superimpose(simple, allstar)
         play(superimposed)
 
     def test_downsample_audio_data(self):
