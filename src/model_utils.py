@@ -185,6 +185,12 @@ def _convert_to_tensor(x: List[np.ndarray], dtype: torch.dtype) -> torch.Tensor:
 def l1_norm_loss(input: torch.Tensor, pos_target: torch.Tensor) -> torch.Tensor:
     return torch.mean(torch.abs(input - pos_target))
 
+def l2_norm_loss(input: torch.Tensor, pos_target: torch.Tensor) -> torch.Tensor:
+    return torch.mean(torch.pow(input - pos_target, 2))
+
+def danny_loss(input: torch.Tensor, pos_target: torch.Tensor) -> torch.Tensor:
+    return -2 * torch.mean(input * pos_target) + torch.mean(input * input)
+
 def l1_norm_triplet_loss(input: torch.Tensor, pos_target: torch.Tensor, neg_target: torch.Tensor) -> torch.Tensor:
     return torch.mean(torch.abs(input - pos_target) - torch.abs(input - neg_target)) + 1
 

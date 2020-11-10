@@ -49,7 +49,7 @@ def train_model(
                 optimizer.zero_grad()
                 y_pred_b, y_pred_t = model(x_batch)
                 loss = loss_fn(y_pred_b * x_batch, y_batch_biden)
-                # loss += loss_fn(y_pred_t * x_batch, y_batch_trump)
+                # loss = loss_fn(y_pred_b * x_batch, y_batch_trump)
 
                 # Backward pass and optimization
                 loss.backward()
@@ -60,6 +60,7 @@ def train_model(
                 progress_bar.update(len(x_batch))
                 progress_bar.set_postfix(loss=loss.item())
                 writer.add_scalar("Loss/train", loss, ((e - 1) * len(train_dl) + i) * args.train_batch_size)
+
 
                 del x_batch
                 del y_batch_biden
@@ -87,6 +88,7 @@ def train_model(
                 y_pred, _ = model(x_batch)
                 y_pred_mask = torch.ones_like(y_pred) * (y_pred > args.alpha)
                 loss = val_loss_fn(y_pred_mask * x_batch, y_batch_biden)
+                # loss = val_loss_fn(y_pred_mask * x_batch, y_batch_trump)
 
                 val_loss += loss.item()
                 num_batches_processed += 1
