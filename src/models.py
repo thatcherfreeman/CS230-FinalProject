@@ -135,7 +135,7 @@ class DoubleUNet(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         y_b, _ = self.net_b(x)
-        y_t, _ = self.net_t(x)
+        _, y_t = self.net_t(x)
         return y_b, y_t
 
 
