@@ -120,9 +120,9 @@ def load_test_data(
     # Choose file names and deterministically shuffle
     print('Reading datasets...')
     pickled_filenames = os.listdir(directory_path)
-    combined_filenames = sorted([fn for fn in pickled_filenames if fn.find('combined_')!=-1])
-    biden_filenames = sorted([fn for fn in pickled_filenames if fn.find('biden_')!=-1])
-    trump_filenames = sorted([fn for fn in pickled_filenames if fn.find('trump_')!=-1])
+    combined_filenames = sorted([fn for fn in pickled_filenames if fn.find('1_combined_')!=-1])
+    biden_filenames = sorted([fn for fn in pickled_filenames if fn.find('1_biden_')!=-1])
+    trump_filenames = sorted([fn for fn in pickled_filenames if fn.find('1_trump_')!=-1])
     zipped_filenames = list(zip(combined_filenames, biden_filenames, trump_filenames))
     random.Random(230).shuffle(zipped_filenames)
 
