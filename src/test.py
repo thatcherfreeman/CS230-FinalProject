@@ -126,7 +126,7 @@ def main():
     device = model_utils.get_device()
 
     # Load dataset from disk
-    x_dev, y_dev, ground_truths, container = model_utils.load_test_data(args.dataset_dir, dev_frac=args.dev_frac)
+    x_dev, y_dev, ground_truths, container = model_utils.load_test_data(args.dataset_dir, dev_frac=args.dev_frac, max_entries=args.dataset_cap)
     dev_dl = data.DataLoader(
         data.TensorDataset(x_dev, y_dev, ground_truths),
         batch_size=args.batch_size,
