@@ -100,7 +100,7 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--dataset_dir',
         type=str,
-        default='/home/ubuntu/cs230/data',
+        default='/home/ubuntu/cs230/audio/combined',
         help='path to directory containing .pkl files',
     )
     parser.add_argument(
