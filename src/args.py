@@ -121,6 +121,12 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
         default=0.1,
         help='Indicates fraction of data to be partitioned into dev set.'
     )
+    parser.add_argument(
+        '--dataset_cap',
+        type=int,
+        default=15000,
+        help='specifies a limit for the number of samples to have in the dataset.',
+    )
 
 def add_wav_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
