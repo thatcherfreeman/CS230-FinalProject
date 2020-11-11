@@ -42,14 +42,14 @@ def train_model(
                 y_batch_biden = y_batch_biden.abs().to(device)
                 y_batch_trump = y_batch_trump.abs().to(device)
 
-                # x_batch = torch.clamp_min(torch.log(x_batch), 0)
-                # y_batch = torch.clamp_min(torch.log(y_batch), 0)
-
                 # Forward pass on model
                 optimizer.zero_grad()
                 y_pred_b, y_pred_t = model(x_batch)
-                loss = loss_fn(y_pred_b * x_batch, y_batch_biden)
-                # loss = loss_fn(y_pred_b * x_batch, y_batch_trump)
+                if args.train_trump:
+                    loss = loss_fn(y_pred_t * x_batch, y_batch_trump)
+                else:
+                    loss = loss_fn(y_pred_b * x_batch, y_batch_biden)
+
 
                 # Backward pass and optimization
                 loss.backward()
@@ -59,7 +59,7 @@ def train_model(
 
                 progress_bar.update(len(x_batch))
                 progress_bar.set_postfix(loss=loss.item())
-                writer.add_scalar("Loss/train", loss, ((e - 1) * len(train_dl) + i) * args.train_batch_size)
+                writer.add_scalar("train/Loss", loss, ((e - 1) * len(train_dl) + i) * args.train_batch_size)
 
 
                 del x_batch
@@ -81,27 +81,31 @@ def train_model(
                 y_batch_trump = y_batch_trump.abs().to(device)
 
                 # Forward pass on model
-                # y_pred = model(torch.clamp_min(torch.log(x_batch), 0))
-                # y_pred_mask = torch.ones_like(y_pred) * (y_pred > 0.85)
-                # loss = loss_fn(y_pred_mask * x_batch, y_batch)
+                y_pred_b, y_pred_t = model(x_batch)
+                y_pred_b_mask = torch.ones_like(y_pred_b) * (y_pred_b > args.alpha)
+                y_pred_t_mask = torch.ones_like(y_pred_t) * (y_pred_t > args.alpha)
 
-                y_pred, _ = model(x_batch)
-                y_pred_mask = torch.ones_like(y_pred) * (y_pred > args.alpha)
-                loss = val_loss_fn(y_pred_mask * x_batch, y_batch_biden)
-                # loss = val_loss_fn(y_pred_mask * x_batch, y_batch_trump)
+                loss_trump = val_loss_fn(y_pred_t_mask * x_batch, y_batch_trump)
+                loss_biden = val_loss_fn(y_pred_b_mask * x_batch, y_batch_biden)
 
-                val_loss += loss.item()
+                if args.train_trump:
+                    val_loss += loss_trump.item()
+                else:
+                    val_loss += loss_biden.item()
                 num_batches_processed += 1
 
                 progress_bar.update(len(x_batch))
                 progress_bar.set_postfix(val_loss=val_loss / num_batches_processed)
-                writer.add_scalar("Loss/val", loss, ((e - 1) * len(dev_dl) + i) * args.val_batch_size)
+                writer.add_scalar("Val/Biden Loss", loss_biden, ((e - 1) * len(dev_dl) + i) * args.val_batch_size)
+                writer.add_scalar("Val/Trump Loss", loss_trump, ((e - 1) * len(dev_dl) + i) * args.val_batch_size)
 
                 del x_batch
                 del y_batch_biden
                 del y_batch_trump
-                del y_pred
-                del loss
+                del y_pred_b
+                del y_pred_t
+                del loss_trump
+                del loss_biden
 
             # Save model if it's the best one yet.
             if val_loss / num_batches_processed < best_val_loss:
@@ -132,7 +136,7 @@ def main():
     device = model_utils.get_device()
 
     # Load dataset from disk
-    x_train, y_train_biden, y_train_trump, mask_train, x_dev, y_dev_biden, y_dev_trump, mask_dev = model_utils.load_data(args.dataset_dir)
+    x_train, y_train_biden, y_train_trump, mask_train, x_dev, y_dev_biden, y_dev_trump, mask_dev = model_utils.load_data(args.dataset_dir, dev_frac=args.dev_frac)
     train_dl = data.DataLoader(
         data.TensorDataset(x_train, y_train_biden, y_train_trump, mask_train),
         batch_size=args.train_batch_size,

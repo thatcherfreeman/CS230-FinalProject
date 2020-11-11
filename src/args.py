@@ -8,6 +8,8 @@ def add_experiment(args: argparse.Namespace) -> None:
         os.makedirs(args.save_path)
     num_folders = len(os.listdir(args.save_path))
     args.experiment = f'{args.model}_exp{num_folders}'
+    if args.name is not None:
+        args.experiment += f'_{args.name}'
 
 
 def save_arguments(args: argparse.Namespace, filename: str) -> None:
@@ -75,6 +77,11 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         action='store_true',
         help='Use this flag to avoid learning rate scheduling.',
     )
+    parser.add_argument(
+        '--train_trump',
+        action='store_true',
+        help='Use this flag to train the model to remove biden from audio clips.',
+    )
 
 
 def add_common_args(parser: argparse.ArgumentParser) -> None:
@@ -93,7 +100,7 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--dataset_dir',
         type=str,
-        default='/home/ubuntu/data/training_data1',
+        default='/home/ubuntu/cs230/data',
         help='path to directory containing .pkl files',
     )
     parser.add_argument(
@@ -101,6 +108,18 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
         type=str,
         default=None,
         help='specify path to load the model at the given path before training.'
+    )
+    parser.add_argument(
+        '--name',
+        type=str,
+        default=None,
+        help='Give the model a name that will be a part of the experiment path.',
+    )
+    parser.add_argument(
+        '--dev_frac',
+        type=float,
+        default=0.1,
+        help='Indicates fraction of data to be partitioned into dev set.'
     )
 
 def add_wav_args(parser: argparse.ArgumentParser) -> None:

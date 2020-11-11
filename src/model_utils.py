@@ -13,16 +13,16 @@ import models
 
 
 def save_model(model: nn.Module, path: str) -> nn.Module:
-    model.cpu()
+    model = model.cpu()
     torch.save(model.state_dict(), path)
-    model.to(get_device())
+    model = model.to(get_device())
     return model
 
 
 def load_model(model: nn.Module, path: str) -> nn.Module:
-    model.cpu()
+    model = model.cpu()
     model.load_state_dict(torch.load(path))
-    model.to(get_device())
+    model = model.to(get_device())
     return model
 
 
@@ -66,11 +66,19 @@ def load_data(
             biden_data = StftData(pickle_file=f'{directory_path}/{bd}')
             trump_data = StftData(pickle_file=f'{directory_path}/{td}')
             combined_ls.append(combined_data.data)
+            # combined_ls.append(trump_data.data)
+            # combined_ls.append(biden_data.data)
             biden_ls.append(biden_data.data)
+            # biden_ls.append(np.zeros_like(biden_data.data))
+            # biden_ls.append(biden_data.data)
             trump_ls.append(trump_data.data)
+            # trump_ls.append(trump_data.data)
+            # trump_ls.append(np.zeros_like(trump_data.data))
             biden_mag = np.abs(biden_data.data)
             trump_mag = np.abs(trump_data.data)
             masks_ls.append(np.ones_like(biden_mag, dtype=np.float32) * (biden_mag > trump_mag))
+            # masks_ls.append(np.zeros_like(trump_mag, dtype=np.float32))
+            # masks_ls.append(np.ones_like(biden_mag, dtype=np.float32))
             progress_bar.update()
 
     # Reformat arrays
@@ -81,6 +89,7 @@ def load_data(
 
     # Partition into train and dev
     print('  Done!')
+    num_examples = len(combined)
     dev_idx = num_examples - int(num_examples * dev_frac)
     return (
         combined[:dev_idx],
@@ -126,14 +135,15 @@ def load_test_data(
     combined_ls, biden_samples_ls, trump_samples_ls, biden_ls = [], [], [], []
     with tqdm(total=len(zipped_filenames)) as progress_bar:
         for i, (cd, bd, td) in enumerate(zipped_filenames):
-            # Preprocess data
             combined_data = StftData(pickle_file=f'{directory_path}/{cd}')
             biden_data = StftData(pickle_file=f'{directory_path}/{bd}')
             trump_data = StftData(pickle_file=f'{directory_path}/{td}')
             combined_ls.append(combined_data.data)
             biden_ls.append(biden_data.data)
-            biden_samples_ls.append(biden_data.invert().time_amplitudes)
-            trump_samples_ls.append(trump_data.invert().time_amplitudes)
+            biden_time_amplitude = biden_data.invert().time_amplitudes
+            trump_time_amplitude = trump_data.invert().time_amplitudes
+            biden_samples_ls.append(biden_time_amplitude)
+            trump_samples_ls.append(trump_time_amplitude)
             progress_bar.update()
 
     # Reformat arrays
