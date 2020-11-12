@@ -164,3 +164,24 @@ def trim(audiodata: AudioData, trim_start: float = 0., trim_end: float = 0) -> A
     samples_start = int(trim_start*audiodata.sampling_freq)
     samples_end = len(audiodata.time_amplitudes) - int(trim_end*audiodata.sampling_freq)
     return AudioData(manual_init=(audiodata.sampling_freq, audiodata.time_amplitudes[samples_start:samples_end]))
+
+
+def audiodata_to_wav(audiodata: AudioData, save_path: str):
+    """Saves an Audiodata object to a .wav file locally."""
+    p = pyaudio.PyAudio()
+    frames = []
+    num_samples = audiodata.time_amplitudes.shape[0]
+    for i in range(0, num_samples//AUDIO_WRITE_CHUNK_SIZE + 1):
+        left_bound = i*AUDIO_WRITE_CHUNK_SIZE
+        right_bound = min(left_bound + AUDIO_WRITE_CHUNK_SIZE, num_samples)
+        if left_bound == right_bound:
+            break
+        chunk = audiodata.time_amplitudes[left_bound:right_bound].astype(np.int16)
+        frames.append(chunk)
+    aud_format = p.get_format_from_width(BYTES_PER_SAMPLE)
+    width = p.get_sample_size(aud_format)
+    with wave.open(save_path, "w") as f:
+        f.setnchannels(1)
+        f.setsampwidth(width)
+        f.setframerate(audiodata.sampling_freq)
+        f.writeframes(b''.join(frames))
