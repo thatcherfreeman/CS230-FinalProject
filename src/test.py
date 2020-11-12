@@ -47,8 +47,8 @@ def test_model(
                 y_biden_mask = torch.clamp(y_pred_b.detach() / x_batch, 0, 1)
                 y_trump_mask = torch.clamp(y_pred_t.detach() / x_batch, 0, 1)
             else:
-                y_biden_mask = torch.ones_like(y_pred_b) * (y_pred_b / x_batch > args.alpha)
-                y_trump_mask = torch.ones_like(y_pred_t) * (y_pred_t / x_batch > args.alpha)
+                y_biden_mask = torch.ones_like(y_pred_b) * (torch.clamp(y_pred_b / x_batch, 0, 1) > args.alpha)
+                y_trump_mask = torch.ones_like(y_pred_t) * (1 - torch.clamp(y_pred_t / x_batch, 0, 1) > args.alpha)
 
             predicted_masks.append((y_biden_mask.cpu(), y_trump_mask.cpu()))
 
