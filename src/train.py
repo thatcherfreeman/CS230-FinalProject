@@ -46,9 +46,11 @@ def train_model(
                 optimizer.zero_grad()
                 y_pred_b, y_pred_t = model(x_batch)
                 if args.train_trump:
-                    loss = loss_fn(y_pred_t * x_batch, y_batch_trump)
+                    # loss = loss_fn(y_pred_t * x_batch, y_batch_trump)
+                    loss = loss_fn(y_pred_t, y_batch_trump)
                 else:
-                    loss = loss_fn(y_pred_b * x_batch, y_batch_biden)
+                    # loss = loss_fn(y_pred_b * x_batch, y_batch_biden)
+                    loss = loss_fn(y_pred_b, y_batch_biden)
 
 
                 # Backward pass and optimization
@@ -82,8 +84,10 @@ def train_model(
 
                 # Forward pass on model
                 y_pred_b, y_pred_t = model(x_batch)
-                y_pred_b_mask = torch.ones_like(y_pred_b) * (y_pred_b > args.alpha)
-                y_pred_t_mask = torch.ones_like(y_pred_t) * (y_pred_t > args.alpha)
+                # y_pred_b_mask = torch.ones_like(y_pred_b) * (y_pred_b > args.alpha)
+                # y_pred_t_mask = torch.ones_like(y_pred_t) * (y_pred_t > args.alpha)
+                y_pred_b_mask = torch.ones_like(y_pred_b) * (torch.clamp(y_pred_b / x_batch, 0, 1) > args.alpha)
+                y_pred_t_mask = torch.ones_like(y_pred_t) * (torch.clamp(y_pred_t / x_batch, 0, 1) > args.alpha)
 
                 loss_trump = val_loss_fn(y_pred_t_mask * x_batch, y_batch_trump)
                 loss_biden = val_loss_fn(y_pred_b_mask * x_batch, y_batch_biden)

@@ -44,11 +44,11 @@ def test_model(
             y_pred_b, y_pred_t = model(x_batch)
 
             if args.nonboolean_mask:
-                y_biden_mask = y_pred_b.detach()
-                y_trump_mask = y_pred_t.detach()
+                y_biden_mask = torch.clamp(y_pred_b.detach() / x_batch, 0, 1)
+                y_trump_mask = torch.clamp(y_pred_t.detach() / x_batch, 0, 1)
             else:
-                y_biden_mask = torch.ones_like(y_pred_b) * (y_pred_b > args.alpha)
-                y_trump_mask = torch.ones_like(y_pred_t) * (y_pred_t > args.alpha)
+                y_biden_mask = torch.ones_like(y_pred_b) * (y_pred_b / x_batch > args.alpha)
+                y_trump_mask = torch.ones_like(y_pred_t) * (y_pred_t / x_batch > args.alpha)
 
             predicted_masks.append((y_biden_mask.cpu(), y_trump_mask.cpu()))
 

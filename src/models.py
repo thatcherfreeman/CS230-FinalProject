@@ -104,7 +104,7 @@ class UNet(nn.Module):
         self.decoder2 = Decoder(32, 16, 0)
         self.decoder1 = Decoder(16, 1, 0, use_relu=False) # A little questionable, maybe should be conv layer
 
-        self.sigmoid = nn.Sigmoid()
+        self.sigmoid = nn.ReLU()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         assert x.dtype == torch.float32
