@@ -124,7 +124,7 @@ class UNet(nn.Module):
         out    = self.decoder1(d_out1, x) # Not sure on this part lol
 
         out = self.sigmoid(out)
-        return out, 1 - out
+        return out, x - out
 
 
 class DoubleUNet(nn.Module):

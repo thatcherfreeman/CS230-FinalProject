@@ -86,8 +86,8 @@ def train_model(
                 y_pred_b, y_pred_t = model(x_batch)
                 # y_pred_b_mask = torch.ones_like(y_pred_b) * (y_pred_b > args.alpha)
                 # y_pred_t_mask = torch.ones_like(y_pred_t) * (y_pred_t > args.alpha)
-                y_pred_b_mask = torch.ones_like(y_pred_b) * (torch.clamp(y_pred_b / x_batch, 0, 1) > args.alpha)
-                y_pred_t_mask = torch.ones_like(y_pred_t) * (1 - torch.clamp(y_pred_b / x_batch, 0, 1) > args.alpha)
+                y_pred_b_mask = torch.clamp(y_pred_b / x_batch, 0, 1)
+                y_pred_t_mask = torch.clamp(y_pred_t / x_batch, 0, 1)
 
                 loss_trump = val_loss_fn(y_pred_t_mask * x_batch, y_batch_trump)
                 loss_biden = val_loss_fn(y_pred_b_mask * x_batch, y_batch_biden)

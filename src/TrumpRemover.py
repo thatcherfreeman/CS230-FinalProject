@@ -72,9 +72,9 @@ def apply_model(input: np.ndarray, model: nn.Module, example_stft: StftData, arg
     input_mags = input_tensor.abs().to(device)
     predictions, _ = model(input_mags)
     if args.nonboolean_mask:
-        predicted_mask = predictions
+        predicted_mask = torch.clamp(predictions / input_mags, 0, 1)
     else:
-        predicted_mask = torch.ones_like(predictions) * (predictions > args.alpha)
+        predicted_mask = torch.ones_like(predictions) * (torch.clamp(predictions / input_mags, 0, 1) > args.alpha)
     output_freqs = input_tensor * predicted_mask
 
     # Convert the outputs back to the time domain
