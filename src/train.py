@@ -140,7 +140,7 @@ def main():
     device = model_utils.get_device()
 
     # Load dataset from disk
-    x_train, y_train_biden, y_train_trump, mask_train, x_dev, y_dev_biden, y_dev_trump, mask_dev = model_utils.load_data(args.dataset_dir, dev_frac=args.dev_frac, max_entries=args.dataset_cap)
+    x_train, y_train_biden, y_train_trump, mask_train, x_dev, y_dev_biden, y_dev_trump, mask_dev, container = model_utils.load_data(args.dataset_dir, dev_frac=args.dev_frac, max_entries=args.dataset_cap)
     train_dl = data.DataLoader(
         data.TensorDataset(x_train, y_train_biden, y_train_trump, mask_train),
         batch_size=args.train_batch_size,

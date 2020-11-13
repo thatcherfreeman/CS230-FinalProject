@@ -103,6 +103,7 @@ def load_data(
         biden[dev_idx:],
         trump[dev_idx:],
         masks[dev_idx:],
+        biden_data,
     )
 
 

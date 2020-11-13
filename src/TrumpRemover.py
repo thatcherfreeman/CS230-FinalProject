@@ -75,7 +75,7 @@ def apply_model(input: np.ndarray, model: nn.Module, example_stft: StftData, arg
         predicted_mask = torch.clamp(predictions / input_mags, 0, 1)
     else:
         predicted_mask = torch.ones_like(predictions) * (torch.clamp(predictions / input_mags, 0, 1) > args.alpha)
-    output_freqs = input_tensor * predicted_mask
+    output_freqs = input_tensor * (predicted_mask.detach().numpy())
 
     # Convert the outputs back to the time domain
     output_time_data = list()
