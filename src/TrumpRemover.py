@@ -5,7 +5,7 @@ import torch
 from torch import nn
 
 import model_utils
-from AudioDataUtils import AudioData, downsample
+from AudioDataUtils import AudioData, downsample, audiodata_to_wav
 from StftData import StftArgs, StftData
 
 CD_QUALITY_SAMPLING_FREQ = 44100
@@ -59,7 +59,8 @@ def process_through_model(path_to_input_wav: str, path_to_output: str, model: nn
 
     # 5. convert output to wav file and save it to wav filepath
     # TODO: implement this, for now it will saved as a pkl file
-    output_audio.save(path_to_output)
+    # output_audio.save(path_to_output)
+    audiodata_to_wav(output_audio, path_to_output)
     return output_audio
 
 

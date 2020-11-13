@@ -21,7 +21,7 @@ def main():
     model.eval()
 
     # Change this line to hear other kinds of samples.
-    dataset = y_train_biden
+    dataset = x_train
 
     for i in range(dataset.shape[0]):
         print(f"Playing Combined {i}...")
