@@ -38,12 +38,12 @@ def train_model(
         torch.cuda.empty_cache()
         with tqdm(total=args.train_batch_size * len(train_dl)) as progress_bar:
             model.train()
-            for i, (_, y_batch_biden, y_batch_trump, _) in enumerate(train_dl):
-                trump_scale = scalar_rand.sample()
-                biden_scale = scalar_rand.sample()
-                y_batch_biden = y_batch_biden * biden_scale
-                y_batch_trump = y_batch_trump * trump_scale
-                x_batch = (y_batch_trump + y_batch_biden).abs().to(device)
+            for i, (x_batch, y_batch_biden, y_batch_trump, _) in enumerate(train_dl):
+                # trump_scale = scalar_rand.sample()
+                # biden_scale = scalar_rand.sample()
+                # y_batch_biden = y_batch_biden * biden_scale
+                # y_batch_trump = y_batch_trump * trump_scale
+                # x_batch = (y_batch_trump + y_batch_biden).abs().to(device)
                 x_batch = x_batch.abs().to(device)
                 y_batch_biden = y_batch_biden.abs().to(device)
                 y_batch_trump = y_batch_trump.abs().to(device)
