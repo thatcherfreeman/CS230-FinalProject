@@ -4,14 +4,14 @@ import numpy as np # type: ignore
 from scipy import signal # type: ignore
 from AudioDataUtils import AudioData
 import matplotlib.pyplot as plt # type: ignore
-from skimage.transform import resize # type: ignore
 
 
 # parameters used for stft (needed for inverse stft)
 class StftArgs:
     window: Optional[Any]
-    nperseg: Optional[int]  # actually choosing this value is encouraged, it's quite important
-    noverlap: Optional[int]  # this is not as important as nperseg but we should still play with it
+    # Even those these two values have defaults, it's recommended to manually tune them
+    nperseg: Optional[int]
+    noverlap: Optional[int]
 
     def __init__(self, nperseg: Optional[int] = None, window: Optional[Any] = 'hann',
                  noverlap:  Optional[int] = None):
@@ -72,10 +72,8 @@ class StftData:
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         plt.imshow(magnitude, aspect='auto', cmap='viridis')
-        # plt.colorbar()
-        plt.gca().invert_yaxis() # put high freq on top
+        plt.gca().invert_yaxis()  # put high freq on top
 
-        # Lie about axis limits lol
         ax.set_axis_off()
         ax2 = fig.add_axes(ax.get_position())
         ax2.patch.set_alpha(0)
