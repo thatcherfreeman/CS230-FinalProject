@@ -109,7 +109,7 @@ def superimpose(audio_1: AudioData, audio_2: AudioData) -> Tuple[AudioData, Audi
     short_data_normalized = copy.deepcopy(short_data.time_amplitudes) / short_data_p2p
 
     new_data = copy.deepcopy(long_data_normalized)
-    new_data[0:short_data.time_amplitudes.shape[0]] += copy.deepcopy(short_data_normalized)
+    new_data[0:short_data.time_amplitudes.shape[0]] += short_data_normalized
     # scale back up by the average of the peak-to-peak distances in the audio sources
     # Note: This may not work very well if one of the samples is really quiet
     rescaling_factor = (long_data_p2p + short_data_p2p)/2

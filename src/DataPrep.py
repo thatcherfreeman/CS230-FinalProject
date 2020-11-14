@@ -59,7 +59,7 @@ class PairGenerator:
 # the pickled stft data of the second source, and the pickled stft data of their superposition. Triplets will all have the
 # same number in their name. For example, "source1_0.pkl", "source2_0.pkl", "combined_0.pkl" are from the same triplet.
 # Once unpickled, appropriate-dimensional data (e.g., 512x128) can be found in the 'data' field of the StftData object.
-# input pkl files are read from the specified directories, source1_dir and source2_dir. Each directory is expected to contain
+# Input pkl files are read from the specified directories, source1_dir and source2_dir. Each directory is expected to contain
 # only pkl files corresponding to its category. Use "AudioDataUtils.cut_into_snippets()" to populate such directories.
 # WARNING: reads all audio data into RAM at the same time
 def create_data_for_model(target_dir: str, source1_dir: str, source2_dir: str,
