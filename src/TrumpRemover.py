@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
+import cv2
 import model_utils
 from AudioDataUtils import AudioData, downsample, audiodata_to_wav
 from StftData import StftArgs, StftData
@@ -68,15 +69,29 @@ def process_through_model(path_to_input_wav: str, path_to_output: str, model: nn
 The 'example_stft' parameter is used to help reconstruct StftData objects to be converted to the time domain. Any StftData object with the same
 'data' shape and sample frequency will work for this."""
 def apply_model(input: np.ndarray, model: nn.Module, example_stft: StftData, args: argparse.Namespace) -> List[AudioData]:
-    device = model_utils.get_device()
     input_tensor = torch.tensor(input, dtype=torch.complex64)
-    input_mags = input_tensor.abs().to(device)
+    input_mags = input_tensor.abs()
     predictions, _ = model(input_mags)
     if args.nonboolean_mask:
         predicted_mask = torch.clamp(predictions / input_mags, 0, 1)
     else:
         predicted_mask = torch.ones_like(predictions) * (torch.clamp(predictions / input_mags, 0, 1) > args.alpha)
-    output_freqs = input_tensor * (predicted_mask.detach().numpy())
+
+
+    predicted_mask = predicted_mask.detach().numpy()
+    for i, mask in enumerate(predicted_mask[:, 0, :, :]):
+        blurred_mask = cv2.GaussianBlur(mask, ksize=(5,5), sigmaX=0, sigmaY=0.5)
+        predicted_mask[i,0] = blurred_mask
+
+    output_freqs = input_tensor.numpy() * (predicted_mask)
+
+    # for i in range(predicted_mask.shape[0]):
+    #     example_stft.data = input_tensor[i,0].numpy()
+    #     example_stft.save_spectrogram(show=True)
+    #     example_stft.data = predicted_mask[i,0]
+    #     example_stft.save_spectrogram(show=True)
+    #     example_stft.data = output_freqs[i,0]
+    #     example_stft.save_spectrogram(show=True)
 
     # Convert the outputs back to the time domain
     output_time_data = list()

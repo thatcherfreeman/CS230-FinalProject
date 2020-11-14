@@ -19,6 +19,7 @@ def main():
     model = models.get_model(args.model)()
     assert args.load_path is not None, "Did not specify model load path"
     model = model_utils.load_model(model, args.load_path)
+    model = model.cpu()
     model.eval()
 
     assert args.input_file is not None, "Did not specify input file!"

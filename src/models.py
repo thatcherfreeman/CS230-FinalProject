@@ -69,18 +69,32 @@ class Decoder(nn.Module):
             padding=(ksize-1)//2,
             padding_mode='replicate'
         )
+        self.conv2 = nn.Conv2d(
+            out_channels,
+            out_channels,
+            kernel_size=ksize,
+            stride=kstride,
+            padding=(ksize-1)//2,
+            padding_mode='replicate'
+        )
         self.relu1 = nn.ReLU()
+        self.relu2 = nn.ReLU()
+        self.relu3 = nn.ReLU()
         self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, x_small: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         n_small, c_small, h_small, w_small = x_small.shape
         assert c_small == self.in_channels
         x_big = self.upres(x_small)
+        x_big = self.relu1(x_big)
         assert x_big.shape == x.shape
         x_cat = torch.cat([x_big, x], dim=1)
         out = self.conv1(x_cat)
+        out = self.relu2(out)
+        out = self.conv2(out)
+
         if self.use_relu:
-            out = self.relu1(out)
+            out = self.relu3(out)
         out = self.dropout(out)
         return out
 
